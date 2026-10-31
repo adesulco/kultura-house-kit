@@ -39,5 +39,5 @@ Tests: 103 unit (vitest) and 16 browser checks (Playwright at 390 and 1280), all
 2. `adesulco/fancon-id` (draft): install, `data-k-product="fancon"`. The FanCon pilot session swaps its local tokens for the kit.
 3. Gelar: waits for PR-D2 (planned 13 Nov).
 4. KULT, FanHub (footer only), Counter and the small repos: next window.
-5. FloorPass: the presets ship in the kit. The DESIGN_BRIEF note on #C74416 is checked in the adoption step.
+5. FloorPass (DS-5): the `floorpass` preset ships in the kit. `DESIGN_BRIEF.md` already reads #C74416 with the dated 31 Oct line; no change needed.
 6. grade.kioskultura.com and the kios storefront: no PR; `docs/adoption-kioskultura.md` is ready for the grading session.
