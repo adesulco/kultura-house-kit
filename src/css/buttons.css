@@ -1,0 +1,39 @@
+/* Buttons: .k-btn + size + variant + shape. Sentence case; caps only for compact mono. */
+.k-btn{
+  --k-btn-h:44px;--k-btn-fs:16px;
+  --k-btn-bg:transparent;--k-btn-fg:var(--k-ink);--k-btn-bd:transparent;
+  box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:var(--k-btn-h);padding:0 calc(var(--k-btn-h) * .75);
+  font-family:var(--k-font);font-size:var(--k-btn-fs);font-weight:700;line-height:1;letter-spacing:normal;
+  text-transform:none;text-decoration:none;white-space:nowrap;
+  color:var(--k-btn-fg);background:var(--k-btn-bg);
+  border:1.5px solid var(--k-btn-bd);border-radius:var(--k-radius-pill);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.k-btn--hero{--k-btn-h:52px;--k-btn-fs:18px}
+.k-btn--compact{--k-btn-h:36px;--k-btn-fs:14px}
+
+.k-btn--primary{--k-btn-bg:var(--k-red-500);--k-btn-fg:#FFFFFF}
+.k-btn--primary.k-btn--compact{--k-btn-bg:var(--k-red-700)}
+.k-btn--secondary{--k-btn-bg:transparent;--k-btn-fg:var(--k-ink);--k-btn-bd:var(--k-ink)}
+.k-btn--ghost{--k-btn-bg:transparent;--k-btn-fg:var(--k-ink)}
+.k-btn--accent{--k-btn-bg:var(--k-accent);--k-btn-fg:var(--k-on-accent)}
+/* Accent text below 16 px: red presets sit on red-700, never on red-500. Inherited, so the
+   nearest data-k-product scope wins. */
+:root{--k-btn-accent-compact:var(--k-red-700)}
+[data-k-product]{--k-btn-accent-compact:var(--k-accent)}
+[data-k-product="kultura"],[data-k-product="kult"],[data-k-product="kios"]{--k-btn-accent-compact:var(--k-red-700)}
+.k-btn--accent.k-btn--compact{--k-btn-bg:var(--k-btn-accent-compact)}
+.k-btn--danger{--k-btn-bg:var(--k-ink);--k-btn-fg:#FFFFFF}
+
+.k-btn--console{border-radius:var(--k-radius-console)}
+
+.k-btn--compact.k-btn--mono{font-family:var(--k-mono);font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+
+.k-btn__icon{order:1;flex:none;display:inline-flex}
+
+.k-btn:hover{filter:brightness(.94)}
+.k-btn--ghost:hover{filter:none;text-decoration:underline;text-underline-offset:3px}
+.k-btn:active{filter:brightness(.88)}
+.k-btn:disabled,.k-btn[aria-disabled="true"]{opacity:.4;filter:none;cursor:not-allowed;pointer-events:none}
+.k-btn:focus-visible{outline:3px solid var(--k-red-800);outline-offset:2px}

@@ -1,0 +1,16 @@
+/* Type scale. Mobile first; desktop from 640 px. Tracking -0.02em at 40 px and up. */
+.k-display,.k-h1,.k-h2,.k-h3,.k-body,.k-small{font-family:var(--k-font);margin:0}
+.k-display{font-size:48px;line-height:.95;font-weight:800;letter-spacing:-0.02em}
+.k-h1{font-size:40px;line-height:1.02;font-weight:800;letter-spacing:-0.02em}
+.k-h2{font-size:32px;line-height:1.05;font-weight:700;letter-spacing:normal}
+.k-h3{font-size:22px;line-height:1.15;font-weight:700}
+.k-body{font-size:16px;line-height:1.5;font-weight:400}
+.k-small{font-size:14px;line-height:1.45;font-weight:400}
+.k-label{font-family:var(--k-mono);font-size:12px;line-height:1.4;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin:0}
+@media (min-width:640px){
+  .k-display{font-size:96px}
+  .k-h1{font-size:64px}
+  .k-h2{font-size:44px;letter-spacing:-0.02em}
+  .k-h3{font-size:28px}
+  .k-body{font-size:17px}
+}

@@ -1,0 +1,2 @@
+/* Focus ring on every interactive element. Zero specificity so products can extend it. */
+:where(a,button,input,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid var(--k-red-800);outline-offset:2px}
