@@ -40,7 +40,7 @@ on:
         default: v0.1.0
     secrets:
       HOUSE_KIT_READ_TOKEN:
-        description: Read access to adesulco/kultura-house-kit while the repo is private.
+        description: Only needed if the kit repo is ever made private again.
         required: false
       VERCEL_AUTOMATION_BYPASS_SECRET:
         description: Lets Lighthouse through Vercel preview protection.

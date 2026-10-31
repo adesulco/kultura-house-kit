@@ -10,7 +10,7 @@ Plan of record: `04_Digital/00_Strategy/Kultura_Digital_Web_Design_Benchmark_v2_
 "@kultura/house-kit": "github:adesulco/kultura-house-kit#v0.1.0"
 ```
 
-`dist/` is committed, so installing from the tag needs no build step. While the repository is private, CI and hosting need read access to it (see STATUS.md, open questions).
+`dist/` is committed, so installing from the tag needs no build step. The repository is public (decided 31 Oct 2026), so CI and Vercel install it with no token.
 
 Repos that cannot install from GitHub (the grade.kioskultura.com family on GitLab) vendor `kultura-house-kit.css` and `kultura-house-kit.js` from the GitHub release. See `docs/adoption-kioskultura.md`.
 
@@ -154,7 +154,7 @@ Product repos call the reusable workflow from their fast tier on PRs that touch 
     secrets: inherit
 ```
 
-It waits for the PR's preview deployment, runs Lighthouse (mobile preset, simulated 4G, median of three), fails under the budget and writes a table to the job summary. TBT stands in for INP in a lab run. Optional secrets: `HOUSE_KIT_READ_TOKEN` (while this repo is private) and `VERCEL_AUTOMATION_BYPASS_SECRET` (protected previews). Locally:
+It waits for the PR's preview deployment, runs Lighthouse (mobile preset, simulated 4G, median of three), fails under the budget and writes a table to the job summary. TBT stands in for INP in a lab run. Optional secret: `VERCEL_AUTOMATION_BYPASS_SECRET`, for protected previews. Locally:
 
 ```bash
 node scripts/lighthouse-mobile.mjs https://kultura.co.id/ https://kultura.co.id/en
