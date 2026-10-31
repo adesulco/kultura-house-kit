@@ -1,4 +1,4 @@
-export { default as houseKitPreset } from './tailwind.js';
+import { CardKind, Sheen } from './elements.js';
 
 declare const tokens: {
     readonly "red-500": "#EE2F42";
@@ -96,5 +96,70 @@ declare function renderFooterStripInner(model: FooterStripModel): string;
 /** Full element markup, ready for server rendering. */
 declare function renderFooterStripHTML(opts?: FooterStripOptions): string;
 
-export { AA_LARGE, AA_TEXT, BUTTON_SHAPES, BUTTON_SIZES, BUTTON_VARIANTS, buttonClass, contrastRatio, ecosystemLinks, footerStripModel, hexToRgb, legacyColourMap, normaliseLang, productPresets, relativeLuminance, renderFooterStripHTML, renderFooterStripInner, tokens };
-export type { AccentPreset, ButtonClassOptions, ButtonShape, ButtonSize, ButtonVariant, EcosystemLink, FooterStripModel, FooterStripOptions, ProductKey, TokenName };
+declare const colourNames: readonly ["red-500", "red-700", "red-800", "ink", "paper", "surface", "line", "muted", "amber-text", "amber-tint", "amber-line", "green", "green-tint", "accent", "on-accent"];
+declare const houseKitPreset: {
+    theme: {
+        extend: {
+            colors: {
+                k: Record<(typeof colourNames)[number], string>;
+            };
+            fontFamily: {
+                k: string[];
+                "k-mono": string[];
+            };
+            fontSize: {
+                "k-display": [string, Record<string, string>];
+                "k-display-sm": [string, Record<string, string>];
+                "k-h1": [string, Record<string, string>];
+                "k-h1-sm": [string, Record<string, string>];
+                "k-h2": [string, Record<string, string>];
+                "k-h2-sm": [string, Record<string, string>];
+                "k-h3": [string, Record<string, string>];
+                "k-h3-sm": [string, Record<string, string>];
+                "k-body": [string, Record<string, string>];
+                "k-body-sm": [string, Record<string, string>];
+                "k-small": [string, Record<string, string>];
+                "k-label": [string, Record<string, string>];
+            };
+            borderRadius: {
+                "k-pill": string;
+                "k-console": string;
+                "k-card": string;
+            };
+            transitionDuration: {
+                "k-fast": string;
+                "k-base": string;
+                "k-slow": string;
+            };
+            transitionTimingFunction: {
+                k: string;
+            };
+            screens: {
+                "k-desktop": string;
+            };
+        };
+    };
+};
+
+interface CardViewerMarkupOptions {
+    src: string;
+    alt: string;
+    back?: string;
+    kind?: CardKind;
+    sheen?: Sheen;
+    maxTilt?: number;
+    eager?: boolean;
+    /** Slab label text (kind="slab"). */
+    label?: string;
+    width?: number;
+    height?: number;
+}
+/** Inner HTML of the element: stage, card, front face and (with a back) the back face. */
+declare function renderCardViewerInner(o: CardViewerMarkupOptions): string;
+/** Host attributes the element would set itself, so upgrading changes nothing visible. */
+declare function cardViewerHostAttributes(o: CardViewerMarkupOptions): Record<string, string>;
+/** The whole element as an HTML string, for templates that cannot run React. */
+declare function renderCardViewerHTML(o: CardViewerMarkupOptions): string;
+
+export { AA_LARGE, AA_TEXT, BUTTON_SHAPES, BUTTON_SIZES, BUTTON_VARIANTS, buttonClass, cardViewerHostAttributes, contrastRatio, ecosystemLinks, footerStripModel, hexToRgb, houseKitPreset, legacyColourMap, normaliseLang, productPresets, relativeLuminance, renderCardViewerHTML, renderCardViewerInner, renderFooterStripHTML, renderFooterStripInner, tokens };
+export type { AccentPreset, ButtonClassOptions, ButtonShape, ButtonSize, ButtonVariant, CardViewerMarkupOptions, EcosystemLink, FooterStripModel, FooterStripOptions, ProductKey, TokenName };

@@ -25,6 +25,8 @@ export class KCardViewer extends HTMLElementBase {
   private target: Tilt = { rx: 0, ry: 0 };
   private raf = 0;
   private rendered = false;
+  /** True when the stage came from the server (React or a template); then it is updated in place, never rebuilt. */
+  private adopted = false;
   private orientation: "off" | "pending" | "on" | "drag" = "off";
   private baseBeta: number | null = null;
   private visible = true;
@@ -73,6 +75,10 @@ export class KCardViewer extends HTMLElementBase {
     this.removeEventListener("keydown", this.onKey);
     this.mql?.removeEventListener?.("change", this.onReducedChange);
     if (typeof window !== "undefined") window.removeEventListener("deviceorientation", this.onOrientation);
+    // A moved element (carousel, list reorder) asks again on the next tap.
+    this.orientation = "off";
+    this.baseBeta = null;
+    this.dragStart = null;
     this.io?.disconnect();
     this.io = null;
   }
@@ -81,11 +87,51 @@ export class KCardViewer extends HTMLElementBase {
     if (this.rendered && oldValue !== newValue) this.render();
   }
 
-  /** Builds the stage. Reuses a server-rendered <img> child as the front face. */
+  /**
+   * Builds the stage, or adopts one already in the markup (server-rendered by the React wrapper
+   * or renderCardViewerHTML). An adopted stage is only updated in place: a framework that
+   * hydrated it still owns those nodes, so they are never replaced.
+   */
   private render() {
-    const doc = this.ownerDocument;
     const alt = this.getAttribute("alt") ?? "";
     const eager = this.hasAttribute("eager");
+    if (!this.rendered && this.querySelector(":scope > .k-cv__stage > .k-cv__card .k-cv__face--front img")) this.adopted = true;
+    const front = this.adopted ? this.adopt(alt, eager) : this.build(alt, eager);
+    const backSrc = this.getAttribute("back");
+
+    this.dataset.kKind = this.parsedKind;
+    this.dataset.kSheen = this.parsedSheen;
+    this.capUpscale(front);
+    if (!backSrc) this.side = "front";
+    this.syncA11y(alt);
+    this.syncReduced();
+    this.applySide(false);
+    this.rendered = true;
+  }
+
+  private adopt(alt: string, eager: boolean): HTMLImageElement {
+    const card = this.querySelector<HTMLElement>(":scope > .k-cv__stage > .k-cv__card");
+    const front = card?.querySelector<HTMLImageElement>(".k-cv__face--front img");
+    if (!card || !front) {
+      this.adopted = false;
+      return this.build(alt, eager);
+    }
+    const set = (el: Element, name: string, value: string) => { if (el.getAttribute(name) !== value) el.setAttribute(name, value); };
+    const src = this.getAttribute("src");
+    if (src) set(front, "src", src);
+    set(front, "alt", alt);
+    set(front, "loading", eager ? "eager" : "lazy");
+    set(front, "decoding", "async");
+    set(front, "draggable", "false");
+    const backSrc = this.getAttribute("back");
+    const backImg = card.querySelector<HTMLImageElement>(".k-cv__face--back img");
+    if (backSrc && backImg) set(backImg, "src", backSrc);
+    this.card = card;
+    return front;
+  }
+
+  private build(alt: string, eager: boolean): HTMLImageElement {
+    const doc = this.ownerDocument;
     const existing = this.querySelector<HTMLImageElement>(":scope > img, .k-cv__face--front img");
     const front = existing ?? doc.createElement("img");
     const src = this.getAttribute("src");
@@ -113,15 +159,7 @@ export class KCardViewer extends HTMLElementBase {
     stage.append(card);
     this.replaceChildren(stage);
     this.card = card;
-
-    this.dataset.kKind = this.parsedKind;
-    this.dataset.kSheen = this.parsedSheen;
-    this.capUpscale(front);
-    if (!backSrc) this.side = "front";
-    this.syncA11y(alt);
-    this.syncReduced();
-    this.applySide(false);
-    this.rendered = true;
+    return front;
   }
 
   private face(side: "front" | "back", img: HTMLImageElement): HTMLElement {
@@ -183,7 +221,10 @@ export class KCardViewer extends HTMLElementBase {
     }
   }
 
-  private onReducedChange = () => this.syncReduced();
+  private onReducedChange = () => {
+    this.syncReduced();
+    this.applySide(false);
+  };
 
   // Pointer: desktop tilt.
   private onEnter = (e: PointerEvent) => {
@@ -255,6 +296,8 @@ export class KCardViewer extends HTMLElementBase {
     if (!Ctor) { this.orientation = "drag"; return; }
     this.orientation = "pending";
     const listen = () => {
+      // Permission can resolve after the element left the page; it asks again when back.
+      if (!this.isConnected) { this.orientation = "off"; return; }
       this.orientation = "on";
       window.addEventListener("deviceorientation", this.onOrientation);
       // Some browsers expose the API but never fire events (desktop, some WebViews).

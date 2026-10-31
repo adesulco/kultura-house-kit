@@ -11,3 +11,6 @@ First release.
 - React wrappers: `CardViewer`, `FooterStrip`, `Button`. Tailwind preset. `ecosystem.json`.
 - Lighthouse mobile check script and reusable workflow.
 - Vendored `kultura-house-kit.css` and `kultura-house-kit.js` attached to the release.
+- Server rendering: `renderCardViewerHTML()` and `renderCardViewerInner()`; the React `CardViewer` server-renders the stage and registers after hydration, and the element adopts server markup in place.
+- The footer strip font follows `--k-font` when the page sets it (framework font loaders), else Outfit.
+- The Lighthouse check fails a page that redirected to another origin (a protected preview) instead of scoring the sign-in page.

@@ -75,3 +75,16 @@ describe("React <FooterStrip>", () => {
     expect(parse(react).getAttribute("current")).toBe("kultura");
   });
 });
+
+describe("footer strip font", () => {
+  it("follows --k-font when the page sets it, else Outfit", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { readStyles } = await import("./support/style-reader");
+    const css = readFileSync(`${process.cwd()}/src/css/footer-strip.css`, "utf8");
+    document.body.innerHTML = `<div class="k"><k-footer-strip></k-footer-strip></div>`;
+    const strip = document.querySelector("k-footer-strip")!;
+    expect(readStyles(strip, css)("font-family")).toBe(`"Outfit",system-ui,sans-serif`);
+    const withFont = `${css}\n.k{--k-font:var(--font-outfit),system-ui,sans-serif}\n:root{--font-outfit:"__Outfit_a1b2c3"}`;
+    expect(readStyles(strip, withFont)("font-family")).toBe(`"__Outfit_a1b2c3",system-ui,sans-serif`);
+  });
+});

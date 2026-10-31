@@ -97,6 +97,22 @@ function round(n) {
   return Object.is(r, -0) ? 0 : r;
 }
 
+// src/card-viewer-markup.ts
+function cardViewerHostAttributes(o) {
+  const kind = parseKind(o.kind ?? null);
+  const attrs = { src: o.src, alt: o.alt };
+  if (o.back) attrs.back = o.back;
+  attrs.kind = kind;
+  if (o.sheen) attrs.sheen = o.sheen;
+  if (o.label) attrs.label = o.label;
+  if (o.maxTilt !== void 0) attrs["max-tilt"] = String(o.maxTilt);
+  if (o.eager) attrs.eager = "";
+  attrs["data-k-kind"] = kind;
+  attrs["data-k-sheen"] = parseSheen(o.sheen ?? null, kind);
+  attrs["data-k-side"] = "front";
+  return attrs;
+}
+
 // src/elements/card-viewer.ts
 var HTMLElementBase = typeof HTMLElement === "undefined" ? class {
 } : HTMLElement;
@@ -113,6 +129,8 @@ var KCardViewer = class extends HTMLElementBase {
     __publicField(this, "target", { rx: 0, ry: 0 });
     __publicField(this, "raf", 0);
     __publicField(this, "rendered", false);
+    /** True when the stage came from the server (React or a template); then it is updated in place, never rebuilt. */
+    __publicField(this, "adopted", false);
     __publicField(this, "orientation", "off");
     __publicField(this, "baseBeta", null);
     __publicField(this, "visible", true);
@@ -120,7 +138,10 @@ var KCardViewer = class extends HTMLElementBase {
     __publicField(this, "dragged", false);
     __publicField(this, "io", null);
     __publicField(this, "mql", null);
-    __publicField(this, "onReducedChange", () => this.syncReduced());
+    __publicField(this, "onReducedChange", () => {
+      this.syncReduced();
+      this.applySide(false);
+    });
     // Pointer: desktop tilt.
     __publicField(this, "onEnter", (e) => {
       if (this.reduced || e.pointerType === "touch") return;
@@ -228,17 +249,59 @@ var KCardViewer = class extends HTMLElementBase {
     this.removeEventListener("keydown", this.onKey);
     this.mql?.removeEventListener?.("change", this.onReducedChange);
     if (typeof window !== "undefined") window.removeEventListener("deviceorientation", this.onOrientation);
+    this.orientation = "off";
+    this.baseBeta = null;
+    this.dragStart = null;
     this.io?.disconnect();
     this.io = null;
   }
   attributeChangedCallback(_name, oldValue, newValue) {
     if (this.rendered && oldValue !== newValue) this.render();
   }
-  /** Builds the stage. Reuses a server-rendered <img> child as the front face. */
+  /**
+   * Builds the stage, or adopts one already in the markup (server-rendered by the React wrapper
+   * or renderCardViewerHTML). An adopted stage is only updated in place: a framework that
+   * hydrated it still owns those nodes, so they are never replaced.
+   */
   render() {
-    const doc = this.ownerDocument;
     const alt = this.getAttribute("alt") ?? "";
     const eager = this.hasAttribute("eager");
+    if (!this.rendered && this.querySelector(":scope > .k-cv__stage > .k-cv__card .k-cv__face--front img")) this.adopted = true;
+    const front = this.adopted ? this.adopt(alt, eager) : this.build(alt, eager);
+    const backSrc = this.getAttribute("back");
+    this.dataset.kKind = this.parsedKind;
+    this.dataset.kSheen = this.parsedSheen;
+    this.capUpscale(front);
+    if (!backSrc) this.side = "front";
+    this.syncA11y(alt);
+    this.syncReduced();
+    this.applySide(false);
+    this.rendered = true;
+  }
+  adopt(alt, eager) {
+    const card = this.querySelector(":scope > .k-cv__stage > .k-cv__card");
+    const front = card?.querySelector(".k-cv__face--front img");
+    if (!card || !front) {
+      this.adopted = false;
+      return this.build(alt, eager);
+    }
+    const set = (el, name, value) => {
+      if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+    };
+    const src = this.getAttribute("src");
+    if (src) set(front, "src", src);
+    set(front, "alt", alt);
+    set(front, "loading", eager ? "eager" : "lazy");
+    set(front, "decoding", "async");
+    set(front, "draggable", "false");
+    const backSrc = this.getAttribute("back");
+    const backImg = card.querySelector(".k-cv__face--back img");
+    if (backSrc && backImg) set(backImg, "src", backSrc);
+    this.card = card;
+    return front;
+  }
+  build(alt, eager) {
+    const doc = this.ownerDocument;
     const existing = this.querySelector(":scope > img, .k-cv__face--front img");
     const front = existing ?? doc.createElement("img");
     const src = this.getAttribute("src");
@@ -265,14 +328,7 @@ var KCardViewer = class extends HTMLElementBase {
     stage.append(card);
     this.replaceChildren(stage);
     this.card = card;
-    this.dataset.kKind = this.parsedKind;
-    this.dataset.kSheen = this.parsedSheen;
-    this.capUpscale(front);
-    if (!backSrc) this.side = "front";
-    this.syncA11y(alt);
-    this.syncReduced();
-    this.applySide(false);
-    this.rendered = true;
+    return front;
   }
   face(side, img) {
     const doc = this.ownerDocument;
@@ -348,6 +404,10 @@ var KCardViewer = class extends HTMLElementBase {
     }
     this.orientation = "pending";
     const listen = () => {
+      if (!this.isConnected) {
+        this.orientation = "off";
+        return;
+      }
       this.orientation = "on";
       window.addEventListener("deviceorientation", this.onOrientation);
       setTimeout(() => {
@@ -474,7 +534,11 @@ function initReveal(root = document) {
   started = true;
   const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const html = root.documentElement;
-  const reveal = (el) => el.classList.add("is-revealed");
+  const revealed = /* @__PURE__ */ new WeakSet();
+  const reveal = (el) => {
+    revealed.add(el);
+    el.classList.add("is-revealed");
+  };
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
@@ -497,11 +561,20 @@ function initReveal(root = document) {
   scan(root);
   if (!reduced) html.setAttribute("data-k-motion", "");
   const mo = new MutationObserver((records) => {
-    for (const r of records) r.addedNodes.forEach((n) => {
-      if (n instanceof Element) scan(n);
-    });
+    for (const r of records) {
+      if (r.type === "childList") {
+        r.addedNodes.forEach((n) => {
+          if (n instanceof Element) scan(n);
+        });
+        continue;
+      }
+      const el = r.target;
+      if (!(el instanceof Element) || !el.classList.contains("k-reveal") || el.classList.contains("is-revealed")) continue;
+      if (reduced || revealed.has(el)) reveal(el);
+      else io.observe(el);
+    }
   });
-  if (root.body) mo.observe(root.body, { childList: true, subtree: true });
+  if (root.body) mo.observe(root.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
   return () => {
     io.disconnect();
     mo.disconnect();
@@ -510,7 +583,7 @@ function initReveal(root = document) {
   };
 }
 
-// src/elements/index.ts
+// src/elements/define.ts
 function defineElements() {
   if (typeof window === "undefined" || !window.customElements) return;
   defineCardViewer();
@@ -518,7 +591,6 @@ function defineElements() {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => initReveal(), { once: true });
   else initReveal();
 }
-defineElements();
 
 // react/index.tsx
 import { Fragment, jsx, jsxs } from "react/jsx-runtime";
@@ -534,24 +606,28 @@ function FooterStrip({ current, entity, lang = "id", className }) {
     ] })
   );
 }
-function CardViewer({ src, alt, back, kind = "card", sheen, maxTilt, eager, label, width, height, className }) {
+function CardViewer({ className, ...o }) {
   useEffect(() => {
     defineElements();
   }, []);
+  const kind = parseKind(o.kind ?? null);
+  const slab = kind === "slab";
+  const frontImg = /* @__PURE__ */ jsx("img", { src: o.src, alt: o.alt, width: o.width, height: o.height, loading: o.eager ? "eager" : "lazy", decoding: "async", draggable: false });
+  const backImg = o.back ? /* @__PURE__ */ jsx("img", { src: o.back, alt: "", loading: "lazy", decoding: "async", draggable: false }) : null;
+  const face = (side, img) => /* @__PURE__ */ jsxs("div", { className: `k-cv__face k-cv__face--${side}`, children: [
+    slab ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx("div", { className: "k-cv__label", children: side === "front" ? o.label ?? "" : "" }),
+      /* @__PURE__ */ jsx("div", { className: "k-cv__window", children: img })
+    ] }) : img,
+    side === "front" ? /* @__PURE__ */ jsx("span", { className: "k-cv__sheen", "aria-hidden": "true" }) : null
+  ] });
   return createElement(
     "k-card-viewer",
-    {
-      class: className,
-      src,
-      alt,
-      back,
-      kind,
-      sheen,
-      label,
-      "max-tilt": maxTilt === void 0 ? void 0 : String(maxTilt),
-      eager: eager ? "" : void 0
-    },
-    /* @__PURE__ */ jsx("img", { src, alt, width, height, loading: eager ? "eager" : "lazy", decoding: "async" })
+    { class: className, ...cardViewerHostAttributes(o) },
+    /* @__PURE__ */ jsx("div", { className: "k-cv__stage", children: /* @__PURE__ */ jsxs("div", { className: "k-cv__card", children: [
+      face("front", frontImg),
+      backImg ? face("back", backImg) : null
+    ] }) })
   );
 }
 function Button({ size, variant, shape, mono, icon, children, className, ...rest }) {

@@ -37,6 +37,15 @@ describe("lighthouse mobile check", () => {
     expect(lh.evaluate(m).pass).toBe(false);
   });
 
+  it("fails a page that redirected to another origin (preview protection)", () => {
+    const blocked = { ...lhr(0.99, 900, 0), requestedUrl: "https://p.vercel.app/en", finalDisplayedUrl: "https://vercel.com/login?next=%2Fen" };
+    const r = lh.evaluate(lh.metricsFromLhr(blocked));
+    expect(r.pass).toBe(false);
+    expect(r.failures[0]).toContain("redirected to https://vercel.com/login");
+    const sameOrigin = { ...lhr(0.99, 900, 0), requestedUrl: "https://p.vercel.app/", finalDisplayedUrl: "https://p.vercel.app/en" };
+    expect(lh.evaluate(lh.metricsFromLhr(sameOrigin)).pass).toBe(true);
+  });
+
   it("writes a markdown table", () => {
     const m = lh.metricsFromLhr(lhr(0.92, 1800, 90));
     const md = lh.summaryMarkdown([{ url: "https://x.test/", metrics: m, result: lh.evaluate(m) }]);

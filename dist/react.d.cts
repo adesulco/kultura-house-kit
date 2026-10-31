@@ -13,6 +13,23 @@ interface ButtonClassOptions {
 }
 declare function buttonClass({ size, variant, shape, mono }?: ButtonClassOptions): string;
 
+type CardKind = "card" | "slab";
+type Sheen = "none" | "holo" | "foil";
+
+interface CardViewerMarkupOptions {
+    src: string;
+    alt: string;
+    back?: string;
+    kind?: CardKind;
+    sheen?: Sheen;
+    maxTilt?: number;
+    eager?: boolean;
+    /** Slab label text (kind="slab"). */
+    label?: string;
+    width?: number;
+    height?: number;
+}
+
 interface FooterStripProps {
     current?: string;
     entity?: string;
@@ -25,30 +42,16 @@ declare function FooterStrip({ current, entity, lang, className }: FooterStripPr
     entity: string | undefined;
     lang: "id" | "en";
 }, string | react.JSXElementConstructor<any>>;
-interface CardViewerProps {
-    src: string;
-    alt: string;
-    back?: string;
-    kind?: "card" | "slab";
-    sheen?: "none" | "holo" | "foil";
-    maxTilt?: number;
-    eager?: boolean;
-    /** Slab label text (kind="slab"). */
-    label?: string;
-    width?: number;
-    height?: number;
+interface CardViewerProps extends CardViewerMarkupOptions {
     className?: string;
 }
-declare function CardViewer({ src, alt, back, kind, sheen, maxTilt, eager, label, width, height, className }: CardViewerProps): react.ReactElement<{
+/**
+ * Server-renders the whole stage (the same markup as renderCardViewerHTML), and registers the
+ * element only after hydration. The element then adopts these nodes and updates them in place,
+ * so React's tree and the DOM never disagree.
+ */
+declare function CardViewer({ className, ...o }: CardViewerProps): react.ReactElement<{
     class: string | undefined;
-    src: string;
-    alt: string;
-    back: string | undefined;
-    kind: "card" | "slab";
-    sheen: "none" | "holo" | "foil" | undefined;
-    label: string | undefined;
-    "max-tilt": string | undefined;
-    eager: string | undefined;
 }, string | react.JSXElementConstructor<any>>;
 type CommonButtonProps = {
     size?: ButtonSize;

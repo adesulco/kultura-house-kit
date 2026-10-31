@@ -1,52 +1,18 @@
 import {
+  DEFAULT_MAX_TILT,
+  TILT_CEILING,
+  __publicField,
+  ariaLabelFor,
+  clamp,
   footerStripModel,
-  renderFooterStripInner
-} from "./chunk-KBEUQRKC.js";
-import {
-  __publicField
-} from "./chunk-PKBMQBKP.js";
-
-// src/elements/card-viewer-logic.ts
-var DEFAULT_MAX_TILT = 8;
-var TILT_CEILING = 20;
-var clamp = (n, min, max) => Math.min(Math.max(n, min), max);
-function parseKind(value) {
-  return value === "slab" ? "slab" : "card";
-}
-function parseSheen(value, kind) {
-  if (value === "none" || value === "holo" || value === "foil") return value;
-  return kind === "slab" ? "none" : "holo";
-}
-function parseMaxTilt(value) {
-  if (value === null || value.trim() === "") return DEFAULT_MAX_TILT;
-  const n = Number(value);
-  if (!Number.isFinite(n)) return DEFAULT_MAX_TILT;
-  return clamp(n, 0, TILT_CEILING);
-}
-function tiltFromPointer(x, y, rect, maxTilt) {
-  if (rect.width <= 0 || rect.height <= 0) return { rx: 0, ry: 0 };
-  const nx = clamp((x - rect.left) / rect.width * 2 - 1, -1, 1);
-  const ny = clamp((y - rect.top) / rect.height * 2 - 1, -1, 1);
-  return { rx: round(-ny * maxTilt), ry: round(nx * maxTilt) };
-}
-function tiltFromOrientation(beta, gamma, baseBeta, maxTilt) {
-  const span = 20;
-  return {
-    rx: round(clamp(-((beta - baseBeta) / span) * maxTilt, -maxTilt, maxTilt)),
-    ry: round(clamp(gamma / span * maxTilt, -maxTilt, maxTilt))
-  };
-}
-function sheenFromTilt({ rx, ry }, maxTilt) {
-  const m = maxTilt || 1;
-  return { angle: round(115 + ry / m * 30), x: round(50 + ry / m * 40), y: round(50 - rx / m * 40) };
-}
-function ariaLabelFor(alt, side) {
-  return `${alt} (${side === "front" ? "depan" : "belakang"})`;
-}
-function round(n) {
-  const r = Math.round(n * 100) / 100;
-  return Object.is(r, -0) ? 0 : r;
-}
+  parseKind,
+  parseMaxTilt,
+  parseSheen,
+  renderFooterStripInner,
+  sheenFromTilt,
+  tiltFromOrientation,
+  tiltFromPointer
+} from "./chunk-36ZNJCDQ.js";
 
 // src/elements/card-viewer.ts
 var HTMLElementBase = typeof HTMLElement === "undefined" ? class {
@@ -64,6 +30,8 @@ var KCardViewer = class extends HTMLElementBase {
     __publicField(this, "target", { rx: 0, ry: 0 });
     __publicField(this, "raf", 0);
     __publicField(this, "rendered", false);
+    /** True when the stage came from the server (React or a template); then it is updated in place, never rebuilt. */
+    __publicField(this, "adopted", false);
     __publicField(this, "orientation", "off");
     __publicField(this, "baseBeta", null);
     __publicField(this, "visible", true);
@@ -71,7 +39,10 @@ var KCardViewer = class extends HTMLElementBase {
     __publicField(this, "dragged", false);
     __publicField(this, "io", null);
     __publicField(this, "mql", null);
-    __publicField(this, "onReducedChange", () => this.syncReduced());
+    __publicField(this, "onReducedChange", () => {
+      this.syncReduced();
+      this.applySide(false);
+    });
     // Pointer: desktop tilt.
     __publicField(this, "onEnter", (e) => {
       if (this.reduced || e.pointerType === "touch") return;
@@ -179,17 +150,59 @@ var KCardViewer = class extends HTMLElementBase {
     this.removeEventListener("keydown", this.onKey);
     this.mql?.removeEventListener?.("change", this.onReducedChange);
     if (typeof window !== "undefined") window.removeEventListener("deviceorientation", this.onOrientation);
+    this.orientation = "off";
+    this.baseBeta = null;
+    this.dragStart = null;
     this.io?.disconnect();
     this.io = null;
   }
   attributeChangedCallback(_name, oldValue, newValue) {
     if (this.rendered && oldValue !== newValue) this.render();
   }
-  /** Builds the stage. Reuses a server-rendered <img> child as the front face. */
+  /**
+   * Builds the stage, or adopts one already in the markup (server-rendered by the React wrapper
+   * or renderCardViewerHTML). An adopted stage is only updated in place: a framework that
+   * hydrated it still owns those nodes, so they are never replaced.
+   */
   render() {
-    const doc = this.ownerDocument;
     const alt = this.getAttribute("alt") ?? "";
     const eager = this.hasAttribute("eager");
+    if (!this.rendered && this.querySelector(":scope > .k-cv__stage > .k-cv__card .k-cv__face--front img")) this.adopted = true;
+    const front = this.adopted ? this.adopt(alt, eager) : this.build(alt, eager);
+    const backSrc = this.getAttribute("back");
+    this.dataset.kKind = this.parsedKind;
+    this.dataset.kSheen = this.parsedSheen;
+    this.capUpscale(front);
+    if (!backSrc) this.side = "front";
+    this.syncA11y(alt);
+    this.syncReduced();
+    this.applySide(false);
+    this.rendered = true;
+  }
+  adopt(alt, eager) {
+    const card = this.querySelector(":scope > .k-cv__stage > .k-cv__card");
+    const front = card?.querySelector(".k-cv__face--front img");
+    if (!card || !front) {
+      this.adopted = false;
+      return this.build(alt, eager);
+    }
+    const set = (el, name, value) => {
+      if (el.getAttribute(name) !== value) el.setAttribute(name, value);
+    };
+    const src = this.getAttribute("src");
+    if (src) set(front, "src", src);
+    set(front, "alt", alt);
+    set(front, "loading", eager ? "eager" : "lazy");
+    set(front, "decoding", "async");
+    set(front, "draggable", "false");
+    const backSrc = this.getAttribute("back");
+    const backImg = card.querySelector(".k-cv__face--back img");
+    if (backSrc && backImg) set(backImg, "src", backSrc);
+    this.card = card;
+    return front;
+  }
+  build(alt, eager) {
+    const doc = this.ownerDocument;
     const existing = this.querySelector(":scope > img, .k-cv__face--front img");
     const front = existing ?? doc.createElement("img");
     const src = this.getAttribute("src");
@@ -216,14 +229,7 @@ var KCardViewer = class extends HTMLElementBase {
     stage.append(card);
     this.replaceChildren(stage);
     this.card = card;
-    this.dataset.kKind = this.parsedKind;
-    this.dataset.kSheen = this.parsedSheen;
-    this.capUpscale(front);
-    if (!backSrc) this.side = "front";
-    this.syncA11y(alt);
-    this.syncReduced();
-    this.applySide(false);
-    this.rendered = true;
+    return front;
   }
   face(side, img) {
     const doc = this.ownerDocument;
@@ -299,6 +305,10 @@ var KCardViewer = class extends HTMLElementBase {
     }
     this.orientation = "pending";
     const listen = () => {
+      if (!this.isConnected) {
+        this.orientation = "off";
+        return;
+      }
       this.orientation = "on";
       window.addEventListener("deviceorientation", this.onOrientation);
       setTimeout(() => {
@@ -425,7 +435,11 @@ function initReveal(root = document) {
   started = true;
   const reduced = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const html = root.documentElement;
-  const reveal = (el) => el.classList.add("is-revealed");
+  const revealed = /* @__PURE__ */ new WeakSet();
+  const reveal = (el) => {
+    revealed.add(el);
+    el.classList.add("is-revealed");
+  };
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
@@ -448,11 +462,20 @@ function initReveal(root = document) {
   scan(root);
   if (!reduced) html.setAttribute("data-k-motion", "");
   const mo = new MutationObserver((records) => {
-    for (const r of records) r.addedNodes.forEach((n) => {
-      if (n instanceof Element) scan(n);
-    });
+    for (const r of records) {
+      if (r.type === "childList") {
+        r.addedNodes.forEach((n) => {
+          if (n instanceof Element) scan(n);
+        });
+        continue;
+      }
+      const el = r.target;
+      if (!(el instanceof Element) || !el.classList.contains("k-reveal") || el.classList.contains("is-revealed")) continue;
+      if (reduced || revealed.has(el)) reveal(el);
+      else io.observe(el);
+    }
   });
-  if (root.body) mo.observe(root.body, { childList: true, subtree: true });
+  if (root.body) mo.observe(root.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
   return () => {
     io.disconnect();
     mo.disconnect();
@@ -461,7 +484,7 @@ function initReveal(root = document) {
   };
 }
 
-// src/elements/index.ts
+// src/elements/define.ts
 function defineElements() {
   if (typeof window === "undefined" || !window.customElements) return;
   defineCardViewer();
@@ -469,6 +492,8 @@ function defineElements() {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => initReveal(), { once: true });
   else initReveal();
 }
+
+// src/elements/index.ts
 defineElements();
 export {
   DEFAULT_MAX_TILT,

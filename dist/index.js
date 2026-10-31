@@ -1,14 +1,12 @@
 import {
-  houseKitPreset
-} from "./chunk-RBEHMU77.js";
-import {
   ecosystemLinks,
   footerStripModel,
   normaliseLang,
+  parseKind,
+  parseSheen,
   renderFooterStripHTML,
   renderFooterStripInner
-} from "./chunk-KBEUQRKC.js";
-import "./chunk-PKBMQBKP.js";
+} from "./chunk-36ZNJCDQ.js";
 
 // src/tokens.ts
 var tokens = {
@@ -89,6 +87,98 @@ function buttonClass({ size = "default", variant = "primary", shape = "pill", mo
   if (mono && size === "compact") out.push("k-btn--mono");
   return out.join(" ");
 }
+
+// src/tailwind.ts
+var colourNames = [
+  "red-500",
+  "red-700",
+  "red-800",
+  "ink",
+  "paper",
+  "surface",
+  "line",
+  "muted",
+  "amber-text",
+  "amber-tint",
+  "amber-line",
+  "green",
+  "green-tint",
+  "accent",
+  "on-accent"
+];
+var fontSize = (size, lineHeight, extra = {}) => [size, { lineHeight, ...extra }];
+var houseKitPreset = {
+  theme: {
+    extend: {
+      colors: {
+        k: Object.fromEntries(colourNames.map((n) => [n, `var(--k-${n})`]))
+      },
+      fontFamily: {
+        k: ["var(--k-font)"],
+        "k-mono": ["var(--k-mono)"]
+      },
+      fontSize: {
+        "k-display": fontSize("96px", "0.95", { letterSpacing: "-0.02em", fontWeight: "800" }),
+        "k-display-sm": fontSize("48px", "0.95", { letterSpacing: "-0.02em", fontWeight: "800" }),
+        "k-h1": fontSize("64px", "1.02", { letterSpacing: "-0.02em", fontWeight: "800" }),
+        "k-h1-sm": fontSize("40px", "1.02", { letterSpacing: "-0.02em", fontWeight: "800" }),
+        "k-h2": fontSize("44px", "1.05", { letterSpacing: "-0.02em", fontWeight: "700" }),
+        "k-h2-sm": fontSize("32px", "1.05", { fontWeight: "700" }),
+        "k-h3": fontSize("28px", "1.15", { fontWeight: "700" }),
+        "k-h3-sm": fontSize("22px", "1.15", { fontWeight: "700" }),
+        "k-body": fontSize("17px", "1.5"),
+        "k-body-sm": fontSize("16px", "1.5"),
+        "k-small": fontSize("14px", "1.45"),
+        "k-label": fontSize("12px", "1.4", { letterSpacing: "0.08em", fontWeight: "500" })
+      },
+      borderRadius: {
+        "k-pill": "var(--k-radius-pill)",
+        "k-console": "var(--k-radius-console)",
+        "k-card": "var(--k-radius-card)"
+      },
+      transitionDuration: { "k-fast": "120ms", "k-base": "200ms", "k-slow": "320ms" },
+      transitionTimingFunction: { k: "cubic-bezier(.2,.7,.2,1)" },
+      screens: { "k-desktop": "640px" }
+    }
+  }
+};
+var tailwind_default = houseKitPreset;
+
+// src/card-viewer-markup.ts
+var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+function img(src, alt, loading, width, height) {
+  const size = `${width === void 0 ? "" : ` width="${width}"`}${height === void 0 ? "" : ` height="${height}"`}`;
+  return `<img src="${esc(src)}" alt="${esc(alt)}"${size} loading="${loading}" decoding="async" draggable="false"/>`;
+}
+function face(side, kind, image, label) {
+  const inner = kind === "slab" ? `<div class="k-cv__label">${esc(side === "front" ? label : "")}</div><div class="k-cv__window">${image}</div>` : image;
+  const sheen = side === "front" ? `<span class="k-cv__sheen" aria-hidden="true"></span>` : "";
+  return `<div class="k-cv__face k-cv__face--${side}">${inner}${sheen}</div>`;
+}
+function renderCardViewerInner(o) {
+  const kind = parseKind(o.kind ?? null);
+  const front = face("front", kind, img(o.src, o.alt, o.eager ? "eager" : "lazy", o.width, o.height), o.label ?? "");
+  const back = o.back ? face("back", kind, img(o.back, "", "lazy"), "") : "";
+  return `<div class="k-cv__stage"><div class="k-cv__card">${front}${back}</div></div>`;
+}
+function cardViewerHostAttributes(o) {
+  const kind = parseKind(o.kind ?? null);
+  const attrs = { src: o.src, alt: o.alt };
+  if (o.back) attrs.back = o.back;
+  attrs.kind = kind;
+  if (o.sheen) attrs.sheen = o.sheen;
+  if (o.label) attrs.label = o.label;
+  if (o.maxTilt !== void 0) attrs["max-tilt"] = String(o.maxTilt);
+  if (o.eager) attrs.eager = "";
+  attrs["data-k-kind"] = kind;
+  attrs["data-k-sheen"] = parseSheen(o.sheen ?? null, kind);
+  attrs["data-k-side"] = "front";
+  return attrs;
+}
+function renderCardViewerHTML(o) {
+  const attrs = Object.entries(cardViewerHostAttributes(o)).map(([k, v]) => v === "" ? k : `${k}="${esc(v)}"`).join(" ");
+  return `<k-card-viewer ${attrs}>${renderCardViewerInner(o)}</k-card-viewer>`;
+}
 export {
   AA_LARGE,
   AA_TEXT,
@@ -96,15 +186,18 @@ export {
   BUTTON_SIZES,
   BUTTON_VARIANTS,
   buttonClass,
+  cardViewerHostAttributes,
   contrastRatio,
   ecosystemLinks,
   footerStripModel,
   hexToRgb,
-  houseKitPreset,
+  tailwind_default as houseKitPreset,
   legacyColourMap,
   normaliseLang,
   productPresets,
   relativeLuminance,
+  renderCardViewerHTML,
+  renderCardViewerInner,
   renderFooterStripHTML,
   renderFooterStripInner,
   tokens

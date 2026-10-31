@@ -163,6 +163,43 @@ describe("pointer tilt and the frame loop", () => {
   });
 });
 
+describe("state across moves and setting changes", () => {
+  it("asks for phone tilt again after the element is moved", () => {
+    let listeners = 0;
+    vi.stubGlobal("DeviceOrientationEvent", class {});
+    const add = window.addEventListener.bind(window);
+    vi.spyOn(window, "addEventListener").mockImplementation((type: string, ...rest: unknown[]) => {
+      if (type === "deviceorientation") listeners++;
+      return (add as (...a: unknown[]) => void)(type, ...rest);
+    });
+    const el = mount(`src="/a.webp" alt="A"`);
+    el.enableOrientation();
+    expect(listeners).toBe(1);
+    const box = document.createElement("div");
+    document.body.append(box);
+    box.append(el); // disconnect + reconnect
+    el.enableOrientation();
+    expect(listeners).toBe(2);
+    vi.restoreAllMocks();
+  });
+
+  it("shows the right side when reduced motion is turned off after a flip", () => {
+    let onChange: (() => void) | null = null;
+    reduced = true;
+    vi.stubGlobal("matchMedia", (q: string) => ({
+      get matches() { return q.includes("prefers-reduced-motion") ? reduced : false; },
+      media: q, addEventListener(_t: string, cb: () => void) { onChange = cb; }, removeEventListener() {},
+    }));
+    const el = mount(`src="/a.webp" back="/b.webp" alt="A"`);
+    el.click();
+    expect(el.style.getPropertyValue("--k-flip")).toBe("0deg");
+    reduced = false;
+    onChange!();
+    expect(el.currentSide).toBe("back");
+    expect(el.style.getPropertyValue("--k-flip")).toBe("180deg");
+  });
+});
+
 describe("reduced motion", () => {
   it("does not tilt, hides the sheen and swaps sides instantly", () => {
     reduced = true;

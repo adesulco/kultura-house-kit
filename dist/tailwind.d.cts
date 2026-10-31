@@ -43,4 +43,4 @@ declare const houseKitPreset: {
     };
 };
 
-export { houseKitPreset as default, houseKitPreset };
+export = houseKitPreset;

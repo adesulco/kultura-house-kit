@@ -1,8 +1,9 @@
 /* Footer strip and wordmark. Self-scoped: declares the tokens it needs on the element,
-   so it works without tokens.css (FanHub, DS-2). */
+   so it works without tokens.css (FanHub, DS-2). The font follows --k-font when the page
+   sets it (a framework font loader names the family itself), else "Outfit". */
 k-footer-strip,.k-footer-strip{
   --k-strip-bg:#EE2F42;--k-strip-fg:#FFFFFF;
-  --k-strip-font:"Outfit",system-ui,sans-serif;
+  --k-strip-font:var(--k-font,"Outfit",system-ui,sans-serif);
   display:block;width:100%;box-sizing:border-box;
   background:var(--k-strip-bg);color:var(--k-strip-fg);font-family:var(--k-strip-font);
 }

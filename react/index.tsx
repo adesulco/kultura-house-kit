@@ -3,7 +3,9 @@
 import { createElement, useEffect, type AnchorHTMLAttributes, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { buttonClass, type ButtonShape, type ButtonSize, type ButtonVariant } from "../src/button";
 import { footerStripModel } from "../src/footer-model";
-import { defineElements } from "../src/elements/index";
+import { cardViewerHostAttributes, type CardViewerMarkupOptions } from "../src/card-viewer-markup";
+import { parseKind } from "../src/elements/card-viewer-logic";
+import { defineElements } from "../src/elements/define";
 
 export interface FooterStripProps {
   current?: string;
@@ -33,37 +35,43 @@ export function FooterStrip({ current, entity, lang = "id", className }: FooterS
   );
 }
 
-export interface CardViewerProps {
-  src: string;
-  alt: string;
-  back?: string;
-  kind?: "card" | "slab";
-  sheen?: "none" | "holo" | "foil";
-  maxTilt?: number;
-  eager?: boolean;
-  /** Slab label text (kind="slab"). */
-  label?: string;
-  width?: number;
-  height?: number;
+export interface CardViewerProps extends CardViewerMarkupOptions {
   className?: string;
 }
 
-export function CardViewer({ src, alt, back, kind = "card", sheen, maxTilt, eager, label, width, height, className }: CardViewerProps) {
+/**
+ * Server-renders the whole stage (the same markup as renderCardViewerHTML), and registers the
+ * element only after hydration. The element then adopts these nodes and updates them in place,
+ * so React's tree and the DOM never disagree.
+ */
+export function CardViewer({ className, ...o }: CardViewerProps) {
   useEffect(() => { defineElements(); }, []);
+  const kind = parseKind(o.kind ?? null);
+  const slab = kind === "slab";
+  const frontImg = (
+    <img src={o.src} alt={o.alt} width={o.width} height={o.height} loading={o.eager ? "eager" : "lazy"} decoding="async" draggable={false} />
+  );
+  const backImg = o.back ? <img src={o.back} alt="" loading="lazy" decoding="async" draggable={false} /> : null;
+  const face = (side: "front" | "back", img: ReactNode) => (
+    <div className={`k-cv__face k-cv__face--${side}`}>
+      {slab ? (
+        <>
+          <div className="k-cv__label">{side === "front" ? o.label ?? "" : ""}</div>
+          <div className="k-cv__window">{img}</div>
+        </>
+      ) : img}
+      {side === "front" ? <span className="k-cv__sheen" aria-hidden="true" /> : null}
+    </div>
+  );
   return createElement(
     "k-card-viewer",
-    {
-      class: className,
-      src,
-      alt,
-      back,
-      kind,
-      sheen,
-      label,
-      "max-tilt": maxTilt === undefined ? undefined : String(maxTilt),
-      eager: eager ? "" : undefined,
-    },
-    <img src={src} alt={alt} width={width} height={height} loading={eager ? "eager" : "lazy"} decoding="async" />,
+    { class: className, ...cardViewerHostAttributes(o) },
+    <div className="k-cv__stage">
+      <div className="k-cv__card">
+        {face("front", frontImg)}
+        {backImg ? face("back", backImg) : null}
+      </div>
+    </div>,
   );
 }
 

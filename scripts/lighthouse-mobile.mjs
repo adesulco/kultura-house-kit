@@ -57,12 +57,28 @@ export function metricsFromLhr(lhr) {
     tbtMs: Math.round(lhr.audits?.["total-blocking-time"]?.numericValue ?? Infinity),
     cls: lhr.audits?.["cumulative-layout-shift"]?.numericValue ?? null,
     error: lhr.runtimeError?.message ?? null,
+    redirectedTo: offOriginRedirect(lhr),
   };
+}
+
+// A preview behind deployment protection redirects to a sign-in page on another origin.
+// Lighthouse would score that page instead, so a redirect off the requested origin fails.
+function offOriginRedirect(lhr) {
+  const requested = lhr.requestedUrl;
+  const final = lhr.finalDisplayedUrl ?? lhr.finalUrl;
+  if (!requested || !final) return null;
+  try {
+    const f = new URL(final);
+    return f.origin === new URL(requested).origin ? null : `${f.origin}${f.pathname}`;
+  } catch {
+    return null;
+  }
 }
 
 export function evaluate(m, budget = BUDGET) {
   const failures = [];
   if (m.error) failures.push(`runtime error: ${m.error}`);
+  if (m.redirectedTo) failures.push(`redirected to ${m.redirectedTo}, page not measured (preview protection: set VERCEL_AUTOMATION_BYPASS_SECRET)`);
   if (m.performance < budget.performance) failures.push(`performance ${m.performance} < ${budget.performance}`);
   if (m.lcpMs > budget.lcpMs) failures.push(`LCP ${fmtMs(m.lcpMs)} > ${fmtMs(budget.lcpMs)}`);
   if (m.tbtMs > budget.tbtMs) failures.push(`TBT ${m.tbtMs} ms > ${budget.tbtMs} ms`);
@@ -133,6 +149,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       tbtMs: median(runs.map((r) => r.tbtMs)),
       cls: runs[0].cls,
       error: runs.find((r) => r.error)?.error ?? null,
+      redirectedTo: runs.find((r) => r.redirectedTo)?.redirectedTo ?? null,
     };
     rows.push({ url, metrics, result: evaluate(metrics, budget) });
   }

@@ -22,11 +22,11 @@ Repos that cannot install from GitHub (the grade.kioskultura.com family on GitLa
 | `@kultura/house-kit/base.css` | tokens + type scale + buttons + focus + motion + footer strip + card viewer |
 | `@kultura/house-kit/footer.css` | footer strip and motion rules only, self-scoped, no global tokens (FanHub, DS-2) |
 | `@kultura/house-kit/motion.css` | `.k-reveal` and `.k-lift` only |
-| `@kultura/house-kit/tailwind` | Tailwind preset mapping the same tokens (`theme.extend`) |
-| `@kultura/house-kit/elements` | registers `<k-card-viewer>` and `<k-footer-strip>`, starts `.k-reveal` |
+| `@kultura/house-kit/tailwind` | Tailwind preset mapping the same tokens (`theme.extend`); `presets: [require("@kultura/house-kit/tailwind")]` or the default import |
+| `@kultura/house-kit/elements` | registers `<k-card-viewer>` and `<k-footer-strip>`, starts `.k-reveal` on import (plain HTML; React apps use `/react`) |
 | `@kultura/house-kit/react` | `<CardViewer>`, `<FooterStrip>`, `<Button>` |
 | `@kultura/house-kit/ecosystem.json` | the footer links, one source |
-| `@kultura/house-kit` | tokens and presets as JS, contrast helpers, `buttonClass()`, footer renderers |
+| `@kultura/house-kit` | tokens and presets as JS, contrast helpers, `buttonClass()`, footer and card viewer renderers |
 
 ## Set the product
 
@@ -118,6 +118,8 @@ import { CardViewer } from "@kultura/house-kit/react";
 ```
 
 Attributes: `src`, `back` (tap, click, Enter or Space flips), `alt` (required), `kind="card|slab"`, `sheen="none|holo|foil"`, `max-tilt` (default 8), `eager`, `label` (slab). Pointer tilt on desktop; on phones the first tap turns on device orientation (iOS asks), with drag-to-tilt when refused. No WebGL, no dependencies, never upscales past the image's natural width. Without JS it is the front image.
+
+Server rendering: the React `<CardViewer>` renders the whole stage on the server and registers the element only after hydration; the element adopts that markup and updates it in place, so hydration never mismatches. Other server templates get the same markup from `renderCardViewerHTML()` (whole element) or `renderCardViewerInner()` (children only). A bare `<k-card-viewer><img></k-card-viewer>` is for plain HTML: there the script replaces the `<img>` with the stage, so do not let a framework hydrate it.
 
 ## Motion
 

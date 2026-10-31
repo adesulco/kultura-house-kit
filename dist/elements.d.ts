@@ -1,32 +1,5 @@
-type CardKind = "card" | "slab";
-type Sheen = "none" | "holo" | "foil";
-declare const DEFAULT_MAX_TILT = 8;
-declare const TILT_CEILING = 20;
-declare const clamp: (n: number, min: number, max: number) => number;
-declare function parseKind(value: string | null): CardKind;
-declare function parseSheen(value: string | null, kind: CardKind): Sheen;
-declare function parseMaxTilt(value: string | null): number;
-interface Tilt {
-    rx: number;
-    ry: number;
-}
-interface RectLike {
-    left: number;
-    top: number;
-    width: number;
-    height: number;
-}
-/** Pointer position over the element to rotateX/rotateY, clamped to maxTilt. */
-declare function tiltFromPointer(x: number, y: number, rect: RectLike, maxTilt: number): Tilt;
-/** Phone orientation (degrees) relative to where it was held when enabled. 20 degrees of phone tilt reaches maxTilt. */
-declare function tiltFromOrientation(beta: number, gamma: number, baseBeta: number, maxTilt: number): Tilt;
-/** Sheen angle and position follow the tilt. */
-declare function sheenFromTilt({ rx, ry }: Tilt, maxTilt: number): {
-    angle: number;
-    x: number;
-    y: number;
-};
-declare function ariaLabelFor(alt: string, side: "front" | "back"): string;
+import { C as CardKind, S as Sheen } from './card-viewer-logic-m3dOgi8_.js';
+export { D as DEFAULT_MAX_TILT, R as RectLike, T as TILT_CEILING, a as Tilt, b as ariaLabelFor, c as clamp, p as parseKind, d as parseMaxTilt, e as parseSheen, s as sheenFromTilt, t as tiltFromOrientation, f as tiltFromPointer } from './card-viewer-logic-m3dOgi8_.js';
 
 declare const HTMLElementBase$1: typeof HTMLElement;
 declare class KCardViewer extends HTMLElementBase$1 {
@@ -40,6 +13,8 @@ declare class KCardViewer extends HTMLElementBase$1 {
     private target;
     private raf;
     private rendered;
+    /** True when the stage came from the server (React or a template); then it is updated in place, never rebuilt. */
+    private adopted;
     private orientation;
     private baseBeta;
     private visible;
@@ -56,8 +31,14 @@ declare class KCardViewer extends HTMLElementBase$1 {
     connectedCallback(): void;
     disconnectedCallback(): void;
     attributeChangedCallback(_name: string, oldValue: string | null, newValue: string | null): void;
-    /** Builds the stage. Reuses a server-rendered <img> child as the front face. */
+    /**
+     * Builds the stage, or adopts one already in the markup (server-rendered by the React wrapper
+     * or renderCardViewerHTML). An adopted stage is only updated in place: a framework that
+     * hydrated it still owns those nodes, so they are never replaced.
+     */
     private render;
+    private adopt;
+    private build;
     private face;
     /** Never upscale beyond the image's natural width. */
     private capUpscale;
@@ -103,5 +84,4 @@ declare function initReveal(root?: Document): () => void;
 
 declare function defineElements(): void;
 
-export { DEFAULT_MAX_TILT, KCardViewer, KFooterStrip, TILT_CEILING, ariaLabelFor, clamp, defineCardViewer, defineElements, defineFooterStrip, initReveal, parseKind, parseMaxTilt, parseSheen, sheenFromTilt, tiltFromOrientation, tiltFromPointer };
-export type { CardKind, RectLike, Sheen, Tilt };
+export { CardKind, KCardViewer, KFooterStrip, Sheen, defineCardViewer, defineElements, defineFooterStrip, initReveal };

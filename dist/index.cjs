@@ -26,15 +26,18 @@ __export(src_exports, {
   BUTTON_SIZES: () => BUTTON_SIZES,
   BUTTON_VARIANTS: () => BUTTON_VARIANTS,
   buttonClass: () => buttonClass,
+  cardViewerHostAttributes: () => cardViewerHostAttributes,
   contrastRatio: () => contrastRatio,
   ecosystemLinks: () => ecosystemLinks,
   footerStripModel: () => footerStripModel,
   hexToRgb: () => hexToRgb,
-  houseKitPreset: () => houseKitPreset,
+  houseKitPreset: () => tailwind_default,
   legacyColourMap: () => legacyColourMap,
   normaliseLang: () => normaliseLang,
   productPresets: () => productPresets,
   relativeLuminance: () => relativeLuminance,
+  renderCardViewerHTML: () => renderCardViewerHTML,
+  renderCardViewerInner: () => renderCardViewerInner,
   renderFooterStripHTML: () => renderFooterStripHTML,
   renderFooterStripInner: () => renderFooterStripInner,
   tokens: () => tokens
@@ -224,6 +227,52 @@ var houseKitPreset = {
     }
   }
 };
+var tailwind_default = houseKitPreset;
+
+// src/elements/card-viewer-logic.ts
+function parseKind(value) {
+  return value === "slab" ? "slab" : "card";
+}
+function parseSheen(value, kind) {
+  if (value === "none" || value === "holo" || value === "foil") return value;
+  return kind === "slab" ? "none" : "holo";
+}
+
+// src/card-viewer-markup.ts
+var esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+function img(src, alt, loading, width, height) {
+  const size = `${width === void 0 ? "" : ` width="${width}"`}${height === void 0 ? "" : ` height="${height}"`}`;
+  return `<img src="${esc(src)}" alt="${esc(alt)}"${size} loading="${loading}" decoding="async" draggable="false"/>`;
+}
+function face(side, kind, image, label) {
+  const inner = kind === "slab" ? `<div class="k-cv__label">${esc(side === "front" ? label : "")}</div><div class="k-cv__window">${image}</div>` : image;
+  const sheen = side === "front" ? `<span class="k-cv__sheen" aria-hidden="true"></span>` : "";
+  return `<div class="k-cv__face k-cv__face--${side}">${inner}${sheen}</div>`;
+}
+function renderCardViewerInner(o) {
+  const kind = parseKind(o.kind ?? null);
+  const front = face("front", kind, img(o.src, o.alt, o.eager ? "eager" : "lazy", o.width, o.height), o.label ?? "");
+  const back = o.back ? face("back", kind, img(o.back, "", "lazy"), "") : "";
+  return `<div class="k-cv__stage"><div class="k-cv__card">${front}${back}</div></div>`;
+}
+function cardViewerHostAttributes(o) {
+  const kind = parseKind(o.kind ?? null);
+  const attrs = { src: o.src, alt: o.alt };
+  if (o.back) attrs.back = o.back;
+  attrs.kind = kind;
+  if (o.sheen) attrs.sheen = o.sheen;
+  if (o.label) attrs.label = o.label;
+  if (o.maxTilt !== void 0) attrs["max-tilt"] = String(o.maxTilt);
+  if (o.eager) attrs.eager = "";
+  attrs["data-k-kind"] = kind;
+  attrs["data-k-sheen"] = parseSheen(o.sheen ?? null, kind);
+  attrs["data-k-side"] = "front";
+  return attrs;
+}
+function renderCardViewerHTML(o) {
+  const attrs = Object.entries(cardViewerHostAttributes(o)).map(([k, v]) => v === "" ? k : `${k}="${esc(v)}"`).join(" ");
+  return `<k-card-viewer ${attrs}>${renderCardViewerInner(o)}</k-card-viewer>`;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AA_LARGE,
@@ -232,6 +281,7 @@ var houseKitPreset = {
   BUTTON_SIZES,
   BUTTON_VARIANTS,
   buttonClass,
+  cardViewerHostAttributes,
   contrastRatio,
   ecosystemLinks,
   footerStripModel,
@@ -241,6 +291,8 @@ var houseKitPreset = {
   normaliseLang,
   productPresets,
   relativeLuminance,
+  renderCardViewerHTML,
+  renderCardViewerInner,
   renderFooterStripHTML,
   renderFooterStripInner,
   tokens

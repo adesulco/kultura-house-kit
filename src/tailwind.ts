@@ -8,7 +8,7 @@ const colourNames = [
 const fontSize = (size: string, lineHeight: string, extra: Record<string, string> = {}) =>
   [size, { lineHeight, ...extra }] as [string, Record<string, string>];
 
-export const houseKitPreset = {
+const houseKitPreset = {
   theme: {
     extend: {
       colors: {
@@ -44,4 +44,5 @@ export const houseKitPreset = {
   },
 };
 
+// Default export only, so require("@kultura/house-kit/tailwind") returns the preset itself.
 export default houseKitPreset;

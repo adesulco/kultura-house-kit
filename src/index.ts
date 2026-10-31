@@ -5,4 +5,6 @@ export { buttonClass, BUTTON_SIZES, BUTTON_VARIANTS, BUTTON_SHAPES } from "./but
 export type { ButtonSize, ButtonVariant, ButtonShape, ButtonClassOptions } from "./button";
 export { ecosystemLinks, footerStripModel, renderFooterStripHTML, renderFooterStripInner, normaliseLang } from "./footer-model";
 export type { EcosystemLink, FooterStripOptions, FooterStripModel } from "./footer-model";
-export { houseKitPreset } from "./tailwind";
+export { default as houseKitPreset } from "./tailwind";
+export { renderCardViewerHTML, renderCardViewerInner, cardViewerHostAttributes } from "./card-viewer-markup";
+export type { CardViewerMarkupOptions } from "./card-viewer-markup";
