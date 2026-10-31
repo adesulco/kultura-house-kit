@@ -1,0 +1,77 @@
+// @vitest-environment jsdom
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
+import ecosystem from "../src/ecosystem.json";
+import { KFooterStrip, defineFooterStrip } from "../src/elements/footer-strip";
+import { footerStripModel, renderFooterStripHTML } from "../src/footer-model";
+import { FooterStrip } from "../react/index";
+
+defineFooterStrip();
+
+describe("ecosystem.json", () => {
+  it("is the v0.1 list in order", () => {
+    expect(ecosystem.map((l) => l.key)).toEqual(["kult", "kios", "fangir", "fancon", "floorpass", "gelar", "fanhub", "kultura"]);
+    for (const l of ecosystem) expect(l.href).toMatch(/^https:\/\//);
+  });
+});
+
+describe("footer model", () => {
+  it("defaults to Bahasa", () => {
+    expect(footerStripModel().line).toBe("Bagian dari ekosistem Kultura");
+  });
+  it("switches to English from the lang attribute", () => {
+    expect(footerStripModel({ lang: "en" }).line).toBe("Part of the Kultura ecosystem");
+    expect(footerStripModel({ lang: "en-US" }).lang).toBe("en");
+  });
+  it("hides the current product's own link", () => {
+    const keys = footerStripModel({ current: "gelar" }).links.map((l) => l.key);
+    expect(keys).not.toContain("gelar");
+    expect(keys).toHaveLength(7);
+  });
+  it("prints the entity line", () => {
+    expect(footerStripModel({ entity: " PT Kultura Digital Kreasi, Jakarta " }).entity).toBe("PT Kultura Digital Kreasi, Jakarta");
+    expect(footerStripModel({}).entity).toBeNull();
+  });
+  it("escapes the entity in server HTML", () => {
+    expect(renderFooterStripHTML({ entity: "<b>x</b>" })).toContain("&lt;b&gt;x&lt;/b&gt;");
+  });
+  it("uses no em dashes in customer copy", () => {
+    for (const lang of ["id", "en"]) expect(renderFooterStripHTML({ lang })).not.toMatch(/—/);
+  });
+});
+
+describe("<k-footer-strip>", () => {
+  it("renders itself when empty", () => {
+    document.body.innerHTML = `<k-footer-strip current="kultura" entity="PT Kios Gemar Kreasi"></k-footer-strip>`;
+    const el = document.querySelector("k-footer-strip") as KFooterStrip;
+    expect(el.querySelector(".k-footer-strip__line")?.textContent).toBe("Bagian dari ekosistem Kultura");
+    expect(el.querySelectorAll("a")).toHaveLength(7);
+    expect(el.querySelector(".k-footer-strip__entity")?.textContent).toBe("PT Kios Gemar Kreasi");
+    expect(el.classList.contains("k-footer-strip")).toBe(true);
+  });
+
+  it("leaves server-rendered markup alone (no layout shift)", () => {
+    const html = renderToStaticMarkup(<FooterStrip current="fancon" entity="PT Fancon Kultura Kreasi" lang="en" />);
+    document.body.innerHTML = html;
+    const el = document.querySelector("k-footer-strip")!;
+    expect(el.innerHTML).toBe(new DOMParser().parseFromString(html, "text/html").querySelector("k-footer-strip")!.innerHTML);
+  });
+
+  it("re-renders when an attribute changes after upgrade", () => {
+    document.body.innerHTML = `<k-footer-strip></k-footer-strip>`;
+    const el = document.querySelector("k-footer-strip")!;
+    el.setAttribute("lang", "en");
+    expect(el.querySelector(".k-footer-strip__line")?.textContent).toBe("Part of the Kultura ecosystem");
+  });
+});
+
+describe("React <FooterStrip>", () => {
+  it("renders the same markup as the string renderer", () => {
+    const opts = { current: "kultura", entity: "PT Kios Gemar Kreasi", lang: "id" as const };
+    const react = renderToStaticMarkup(<FooterStrip {...opts} />);
+    const parse = (s: string) => new DOMParser().parseFromString(s, "text/html").querySelector("k-footer-strip")!;
+    expect(parse(react).innerHTML).toBe(parse(renderFooterStripHTML(opts)).innerHTML);
+    expect(parse(react).getAttribute("class")).toBe("k-footer-strip");
+    expect(parse(react).getAttribute("current")).toBe("kultura");
+  });
+});

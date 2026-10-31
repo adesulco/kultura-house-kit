@@ -1,0 +1,3 @@
+/* Footer strip + motion rules without global tokens (for products that keep their own, DS-2). */
+@import "./footer-strip.css";
+@import "./motion.css";
