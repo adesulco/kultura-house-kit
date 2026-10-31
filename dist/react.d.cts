@@ -30,6 +30,8 @@ interface CardViewerMarkupOptions {
     height?: number;
 }
 
+declare function defineElements(): void;
+
 interface FooterStripProps {
     current?: string;
     entity?: string;
@@ -68,5 +70,5 @@ type ButtonProps = (CommonButtonProps & {
 } & AnchorHTMLAttributes<HTMLAnchorElement>);
 declare function Button({ size, variant, shape, mono, icon, children, className, ...rest }: ButtonProps): react.JSX.Element;
 
-export { Button, CardViewer, FooterStrip, buttonClass };
+export { Button, CardViewer, FooterStrip, buttonClass, defineElements };
 export type { ButtonProps, CardViewerProps, FooterStripProps };

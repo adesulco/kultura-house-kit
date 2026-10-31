@@ -23,7 +23,7 @@ Repos that cannot install from GitHub (the grade.kioskultura.com family on GitLa
 | `@kultura/house-kit/footer.css` | footer strip and motion rules only, self-scoped, no global tokens (FanHub, DS-2) |
 | `@kultura/house-kit/motion.css` | `.k-reveal` and `.k-lift` only |
 | `@kultura/house-kit/tailwind` | Tailwind preset mapping the same tokens (`theme.extend`); `presets: [require("@kultura/house-kit/tailwind")]` or the default import |
-| `@kultura/house-kit/elements` | registers `<k-card-viewer>` and `<k-footer-strip>`, starts `.k-reveal` on import (plain HTML; React apps use `/react`) |
+| `@kultura/house-kit/elements` | registers `<k-card-viewer>` and `<k-footer-strip>`, starts `.k-reveal` on import (plain HTML). React apps: `CardViewer` registers after hydration; for `.k-reveal` without it, call `defineElements()` from `/react` in a client effect |
 | `@kultura/house-kit/react` | `<CardViewer>`, `<FooterStrip>`, `<Button>` |
 | `@kultura/house-kit/ecosystem.json` | the footer links, one source |
 | `@kultura/house-kit` | tokens and presets as JS, contrast helpers, `buttonClass()`, footer and card viewer renderers |

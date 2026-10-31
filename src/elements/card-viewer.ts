@@ -35,6 +35,13 @@ export class KCardViewer extends HTMLElementBase {
   private io: IntersectionObserver | null = null;
   private mql: MediaQueryList | null = null;
 
+  /** The card node, looked up again if the page replaced the inner markup since. */
+  private get cardEl(): HTMLElement | null {
+    if (this.card && this.contains(this.card)) return this.card;
+    this.card = this.querySelector<HTMLElement>(":scope > .k-cv__stage > .k-cv__card");
+    return this.card;
+  }
+
   get parsedKind(): CardKind { return parseKind(this.getAttribute("kind")); }
   get parsedSheen(): Sheen { return parseSheen(this.getAttribute("sheen"), this.parsedKind); }
   get parsedMaxTilt(): number { return parseMaxTilt(this.getAttribute("max-tilt")); }
@@ -112,7 +119,13 @@ export class KCardViewer extends HTMLElementBase {
   private adopt(alt: string, eager: boolean): HTMLImageElement {
     const card = this.querySelector<HTMLElement>(":scope > .k-cv__stage > .k-cv__card");
     const front = card?.querySelector<HTMLImageElement>(".k-cv__face--front img");
-    if (!card || !front) {
+    // Markup that no longer matches the attributes (a back added from script, kind changed) is
+    // rebuilt. React always renders matching markup, so this only happens with templates.
+    const slab = this.parsedKind === "slab";
+    const matches = !!card && !!front
+      && !!card.querySelector(".k-cv__face--back img") === !!this.getAttribute("back")
+      && !!card.querySelector(".k-cv__window") === slab;
+    if (!card || !front || !matches) {
       this.adopted = false;
       return this.build(alt, eager);
     }
@@ -126,6 +139,9 @@ export class KCardViewer extends HTMLElementBase {
     const backSrc = this.getAttribute("back");
     const backImg = card.querySelector<HTMLImageElement>(".k-cv__face--back img");
     if (backSrc && backImg) set(backImg, "src", backSrc);
+    const label = slab ? card.querySelector(".k-cv__face--front .k-cv__label") : null;
+    const labelText = this.getAttribute("label") ?? "";
+    if (label && label.textContent !== labelText) label.textContent = labelText;
     this.card = card;
     return front;
   }
@@ -263,7 +279,7 @@ export class KCardViewer extends HTMLElementBase {
   };
 
   private updateFromPointer(e: PointerEvent) {
-    const stage = this.card?.parentElement;
+    const stage = this.cardEl?.parentElement;
     if (!stage) return;
     this.target = tiltFromPointer(e.clientX, e.clientY, stage.getBoundingClientRect(), this.parsedMaxTilt);
     this.schedule();
@@ -328,7 +344,8 @@ export class KCardViewer extends HTMLElementBase {
     if (this.looping) return;
     this.looping = true;
     delete this.dataset.kState;
-    if (this.card) this.card.style.willChange = "transform";
+    const card = this.cardEl;
+    if (card) card.style.willChange = "transform";
   }
 
   private stopLoop() {
@@ -352,7 +369,7 @@ export class KCardViewer extends HTMLElementBase {
     this.stopLoop();
     this.dataset.kState = "settling";
     this.setTilt({ rx: 0, ry: 0 });
-    const card = this.card;
+    const card = this.cardEl;
     const done = () => {
       if (card) card.style.willChange = "";
       if (this.dataset.kState === "settling") delete this.dataset.kState;

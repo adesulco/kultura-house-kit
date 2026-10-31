@@ -78,7 +78,7 @@ function offOriginRedirect(lhr) {
 export function evaluate(m, budget = BUDGET) {
   const failures = [];
   if (m.error) failures.push(`runtime error: ${m.error}`);
-  if (m.redirectedTo) failures.push(`redirected to ${m.redirectedTo}, page not measured (preview protection: set VERCEL_AUTOMATION_BYPASS_SECRET)`);
+  if (m.redirectedTo) failures.push(`redirected to ${m.redirectedTo}, page not measured (a protected preview needs VERCEL_AUTOMATION_BYPASS_SECRET; otherwise give the final URL)`);
   if (m.performance < budget.performance) failures.push(`performance ${m.performance} < ${budget.performance}`);
   if (m.lcpMs > budget.lcpMs) failures.push(`LCP ${fmtMs(m.lcpMs)} > ${fmtMs(budget.lcpMs)}`);
   if (m.tbtMs > budget.tbtMs) failures.push(`TBT ${m.tbtMs} ms > ${budget.tbtMs} ms`);

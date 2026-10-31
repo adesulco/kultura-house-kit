@@ -91,4 +91,21 @@ describe("card viewer server markup", () => {
     expect(el.querySelector("img")).toBe(img);
     expect(el.getAttribute("role")).toBe("button");
   });
+
+  it("rebuilds template markup that no longer matches, and finds a swapped stage", () => {
+    document.body.innerHTML = renderCardViewerHTML({ src: "/a.webp", alt: "A" });
+    const el = document.querySelector("k-card-viewer") as KCardViewer;
+    el.setAttribute("back", "/b.webp");
+    expect(el.querySelector(".k-cv__face--back img")?.getAttribute("src")).toBe("/b.webp");
+    el.innerHTML = renderCardViewerInner({ src: "/c.webp", alt: "C", back: "/d.webp" });
+    const stage = el.querySelector(".k-cv__stage") as HTMLElement;
+    stage.getBoundingClientRect = () => ({ left: 0, top: 0, width: 200, height: 280, right: 200, bottom: 280, x: 0, y: 0, toJSON() {} });
+    const raf: FrameRequestCallback[] = [];
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => { raf.push(cb); return raf.length; });
+    const enter = Object.assign(new Event("pointerenter"), { clientX: 200, clientY: 0, pointerType: "mouse" });
+    el.dispatchEvent(enter);
+    raf.splice(0).forEach((cb) => cb(0));
+    expect(el.style.getPropertyValue("--k-ry")).not.toBe("0deg");
+    expect((el.querySelector(".k-cv__card") as HTMLElement).style.willChange).toBe("transform");
+  });
 });

@@ -169,6 +169,12 @@ var KCardViewer = class extends HTMLElementBase {
       this.schedule();
     });
   }
+  /** The card node, looked up again if the page replaced the inner markup since. */
+  get cardEl() {
+    if (this.card && this.contains(this.card)) return this.card;
+    this.card = this.querySelector(":scope > .k-cv__stage > .k-cv__card");
+    return this.card;
+  }
   get parsedKind() {
     return parseKind(this.getAttribute("kind"));
   }
@@ -251,7 +257,9 @@ var KCardViewer = class extends HTMLElementBase {
   adopt(alt, eager) {
     const card = this.querySelector(":scope > .k-cv__stage > .k-cv__card");
     const front = card?.querySelector(".k-cv__face--front img");
-    if (!card || !front) {
+    const slab = this.parsedKind === "slab";
+    const matches = !!card && !!front && !!card.querySelector(".k-cv__face--back img") === !!this.getAttribute("back") && !!card.querySelector(".k-cv__window") === slab;
+    if (!card || !front || !matches) {
       this.adopted = false;
       return this.build(alt, eager);
     }
@@ -267,6 +275,9 @@ var KCardViewer = class extends HTMLElementBase {
     const backSrc = this.getAttribute("back");
     const backImg = card.querySelector(".k-cv__face--back img");
     if (backSrc && backImg) set(backImg, "src", backSrc);
+    const label = slab ? card.querySelector(".k-cv__face--front .k-cv__label") : null;
+    const labelText = this.getAttribute("label") ?? "";
+    if (label && label.textContent !== labelText) label.textContent = labelText;
     this.card = card;
     return front;
   }
@@ -356,7 +367,7 @@ var KCardViewer = class extends HTMLElementBase {
     }
   }
   updateFromPointer(e) {
-    const stage = this.card?.parentElement;
+    const stage = this.cardEl?.parentElement;
     if (!stage) return;
     this.target = tiltFromPointer(e.clientX, e.clientY, stage.getBoundingClientRect(), this.parsedMaxTilt);
     this.schedule();
@@ -399,7 +410,8 @@ var KCardViewer = class extends HTMLElementBase {
     if (this.looping) return;
     this.looping = true;
     delete this.dataset.kState;
-    if (this.card) this.card.style.willChange = "transform";
+    const card = this.cardEl;
+    if (card) card.style.willChange = "transform";
   }
   stopLoop() {
     this.looping = false;
@@ -420,7 +432,7 @@ var KCardViewer = class extends HTMLElementBase {
     this.stopLoop();
     this.dataset.kState = "settling";
     this.setTilt({ rx: 0, ry: 0 });
-    const card = this.card;
+    const card = this.cardEl;
     const done = () => {
       if (card) card.style.willChange = "";
       if (this.dataset.kState === "settling") delete this.dataset.kState;

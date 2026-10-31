@@ -104,3 +104,5 @@ export function Button({ size, variant, shape, mono, icon, children, className, 
 }
 
 export { buttonClass };
+/** For React apps that use .k-reveal or plain <k-footer-strip> without CardViewer: call in a client effect. */
+export { defineElements };

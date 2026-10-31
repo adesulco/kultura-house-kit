@@ -22,6 +22,8 @@ declare class KCardViewer extends HTMLElementBase$1 {
     private dragged;
     private io;
     private mql;
+    /** The card node, looked up again if the page replaced the inner markup since. */
+    private get cardEl();
     get parsedKind(): CardKind;
     get parsedSheen(): Sheen;
     get parsedMaxTilt(): number;
