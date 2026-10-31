@@ -1,0 +1,33 @@
+# On a v* tag: verify, build, and attach the vendored files to the GitHub release
+# (for repos that cannot install from GitHub, such as the GitLab family).
+name: Release
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .nvmrc, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - name: Tag matches package version
+        run: test "v$(node -p 'require("./package.json").version')" = "${GITHUB_REF_NAME}"
+      - run: pnpm lint && pnpm typecheck && pnpm check:dist && pnpm test:unit
+      - name: Create release with vendored files
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/kultura-house-kit.css dist/kultura-house-kit.js dist/tokens.css dist/ecosystem.json \
+            --title "$GITHUB_REF_NAME" --notes-file CHANGELOG.md --verify-tag

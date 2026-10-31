@@ -1,0 +1,159 @@
+/* @kultura/house-kit base: tokens + type scale + buttons + focus + motion + footer + card viewer. */
+/* @kultura/house-kit tokens v0.1. Custom properties only. Names are final for v0.1. */
+:root{
+  /* brand */
+  --k-red-500:#EE2F42;   /* fills, large type >= 24px, logo, ecosystem strip */
+  --k-red-700:#C81E2F;   /* links, small buttons, text-size red (5.7:1 on white). PSA site's #C81E30 maps here */
+  --k-red-800:#B0182A;   /* pressed state, focus ring */
+  /* neutrals */
+  --k-ink:#0A0A0A; --k-paper:#FFFFFF; --k-surface:#F4F4F4; --k-line:#E6E6E6; --k-muted:#6E6E76;
+  /* status (never red for form errors) */
+  --k-amber-text:#8A5A00; --k-amber-tint:#FFF4DE; --k-amber-line:#F2DCA8;
+  --k-green:#0F7A3D; --k-green-tint:#E9F8EF;
+  /* product accent slot: each product sets these two, contrast-gated */
+  --k-accent:var(--k-red-500); --k-on-accent:#FFFFFF;
+  /* type */
+  --k-font:"Outfit",system-ui,sans-serif;
+  --k-mono:"JetBrains Mono",ui-monospace,monospace;
+  /* radius */
+  --k-radius-pill:9999px; --k-radius-console:8px; --k-radius-card:12px;
+  /* motion */
+  --k-fast:120ms; --k-base:200ms; --k-slow:320ms; --k-ease:cubic-bezier(.2,.7,.2,1);
+}
+
+/* Product accent presets. Set data-k-product on <html>. FanHub sets none (DS-2). */
+[data-k-product="kultura"],[data-k-product="kult"],[data-k-product="kios"]{--k-accent:#EE2F42;--k-on-accent:#FFFFFF;}
+[data-k-product="fancon"]{--k-accent:#EFFF42;--k-on-accent:#0A0A0A;}
+[data-k-product="floorpass"]{--k-accent:#C74416;--k-on-accent:#FFFFFF;}
+[data-k-product="gelar"]{--k-accent:#141414;--k-on-accent:#FFF4E1;}
+[data-k-product="fangir"]{--k-accent:#002366;--k-on-accent:#FFFFFF;}
+/* Type scale. Mobile first; desktop from 640 px. Tracking -0.02em at 40 px and up. */
+.k-display,.k-h1,.k-h2,.k-h3,.k-body,.k-small{font-family:var(--k-font);margin:0}
+.k-display{font-size:48px;line-height:.95;font-weight:800;letter-spacing:-0.02em}
+.k-h1{font-size:40px;line-height:1.02;font-weight:800;letter-spacing:-0.02em}
+.k-h2{font-size:32px;line-height:1.05;font-weight:700;letter-spacing:normal}
+.k-h3{font-size:22px;line-height:1.15;font-weight:700}
+.k-body{font-size:16px;line-height:1.5;font-weight:400}
+.k-small{font-size:14px;line-height:1.45;font-weight:400}
+.k-label{font-family:var(--k-mono);font-size:12px;line-height:1.4;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin:0}
+@media (min-width:640px){
+  .k-display{font-size:96px}
+  .k-h1{font-size:64px}
+  .k-h2{font-size:44px;letter-spacing:-0.02em}
+  .k-h3{font-size:28px}
+  .k-body{font-size:17px}
+}
+/* Buttons: .k-btn + size + variant + shape. Sentence case; caps only for compact mono. */
+.k-btn{
+  --k-btn-h:44px;--k-btn-fs:16px;
+  --k-btn-bg:transparent;--k-btn-fg:var(--k-ink);--k-btn-bd:transparent;
+  box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:var(--k-btn-h);padding:0 calc(var(--k-btn-h) * .75);
+  font-family:var(--k-font);font-size:var(--k-btn-fs);font-weight:700;line-height:1;letter-spacing:normal;
+  text-transform:none;text-decoration:none;white-space:nowrap;
+  color:var(--k-btn-fg);background:var(--k-btn-bg);
+  border:1.5px solid var(--k-btn-bd);border-radius:var(--k-radius-pill);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.k-btn--hero{--k-btn-h:52px;--k-btn-fs:18px}
+.k-btn--compact{--k-btn-h:36px;--k-btn-fs:14px}
+
+.k-btn--primary{--k-btn-bg:var(--k-red-500);--k-btn-fg:#FFFFFF}
+.k-btn--primary.k-btn--compact{--k-btn-bg:var(--k-red-700)}
+.k-btn--secondary{--k-btn-bg:transparent;--k-btn-fg:var(--k-ink);--k-btn-bd:var(--k-ink)}
+.k-btn--ghost{--k-btn-bg:transparent;--k-btn-fg:var(--k-ink)}
+.k-btn--accent{--k-btn-bg:var(--k-accent);--k-btn-fg:var(--k-on-accent)}
+/* Accent text below 16 px: red presets sit on red-700, never on red-500. Inherited, so the
+   nearest data-k-product scope wins. */
+:root{--k-btn-accent-compact:var(--k-red-700)}
+[data-k-product]{--k-btn-accent-compact:var(--k-accent)}
+[data-k-product="kultura"],[data-k-product="kult"],[data-k-product="kios"]{--k-btn-accent-compact:var(--k-red-700)}
+.k-btn--accent.k-btn--compact{--k-btn-bg:var(--k-btn-accent-compact)}
+.k-btn--danger{--k-btn-bg:var(--k-ink);--k-btn-fg:#FFFFFF}
+
+.k-btn--console{border-radius:var(--k-radius-console)}
+
+.k-btn--compact.k-btn--mono{font-family:var(--k-mono);font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+
+.k-btn__icon{order:1;flex:none;display:inline-flex}
+
+.k-btn:hover{filter:brightness(.94)}
+.k-btn--ghost:hover{filter:none;text-decoration:underline;text-underline-offset:3px}
+.k-btn:active{filter:brightness(.88)}
+.k-btn:disabled,.k-btn[aria-disabled="true"]{opacity:.4;filter:none;cursor:not-allowed;pointer-events:none}
+.k-btn:focus-visible{outline:3px solid var(--k-red-800);outline-offset:2px}
+/* Focus ring on every interactive element. Zero specificity so products can extend it. */
+:where(a,button,input,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid var(--k-red-800);outline-offset:2px}
+/* Motion: only transform and opacity animate. Everything off under reduced motion.
+   .k-reveal hides only once the elements script has set data-k-motion on <html>,
+   so pages without the script never lose content. */
+:root[data-k-motion] .k-reveal:not(.is-revealed){opacity:0;transform:translateY(12px)}
+.k-reveal{transition:opacity var(--k-slow,320ms) var(--k-ease,cubic-bezier(.2,.7,.2,1)),transform var(--k-slow,320ms) var(--k-ease,cubic-bezier(.2,.7,.2,1))}
+.k-lift{transition:transform var(--k-fast,120ms) var(--k-ease,cubic-bezier(.2,.7,.2,1))}
+.k-lift:hover{transform:translateY(-2px)}
+@media (prefers-reduced-motion:reduce){
+  :root[data-k-motion] .k-reveal:not(.is-revealed){opacity:1;transform:none}
+  .k-reveal,.k-lift{transition:none}
+  .k-lift:hover{transform:none}
+}
+/* Footer strip and wordmark. Self-scoped: declares the tokens it needs on the element,
+   so it works without tokens.css (FanHub, DS-2). */
+k-footer-strip,.k-footer-strip{
+  --k-strip-bg:#EE2F42;--k-strip-fg:#FFFFFF;
+  --k-strip-font:"Outfit",system-ui,sans-serif;
+  display:block;width:100%;box-sizing:border-box;
+  background:var(--k-strip-bg);color:var(--k-strip-fg);font-family:var(--k-strip-font);
+}
+.k-footer-strip__inner{box-sizing:border-box;max-width:1280px;margin:0 auto;padding:24px 16px;display:flex;flex-wrap:wrap;align-items:baseline;gap:12px 32px}
+.k-footer-strip__line{margin:0;font-size:20px;line-height:1.3;font-weight:700}
+.k-footer-strip__nav{flex:1 1 auto}
+.k-footer-strip__links{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px 20px}
+.k-footer-strip__link{color:inherit;font-size:16px;line-height:1.5;font-weight:500;text-decoration:none}
+.k-footer-strip__link:hover{text-decoration:underline;text-underline-offset:3px}
+.k-footer-strip__link:focus-visible{outline:3px solid var(--k-strip-fg);outline-offset:2px}
+.k-footer-strip__entity{flex-basis:100%;margin:0;font-size:14px;line-height:1.45;font-weight:400}
+@media (min-width:640px){.k-footer-strip__inner{padding:28px 32px}}
+
+.k-footer-wordmark{display:block;width:100%;overflow:hidden;white-space:nowrap;margin:0;font-family:var(--k-font,"Outfit",system-ui,sans-serif);font-size:clamp(64px,18vw,240px);line-height:.85;font-weight:800;letter-spacing:-0.02em}
+/* <k-card-viewer>: one object, large, tilting. No-JS fallback is the front image. */
+k-card-viewer{display:block;position:relative;max-width:var(--k-cv-max,100%);margin-inline:auto;-webkit-tap-highlight-color:transparent;touch-action:pan-y}
+k-card-viewer:not(:defined)>img{display:block;width:100%;height:auto;border-radius:var(--k-radius-card,12px)}
+k-card-viewer[role="button"]{cursor:pointer}
+k-card-viewer:focus-visible{outline:3px solid var(--k-red-800,#B0182A);outline-offset:4px;border-radius:var(--k-radius-card,12px)}
+.k-cv__stage{perspective:1000px}
+.k-cv__card{position:relative;transform-style:preserve-3d;
+  transform:rotateX(var(--k-rx,0deg)) rotateY(calc(var(--k-ry,0deg) + var(--k-flip,0deg)));
+  transition:transform var(--k-fast,120ms) var(--k-ease,cubic-bezier(.2,.7,.2,1))}
+k-card-viewer[data-k-state="settling"] .k-cv__card,k-card-viewer[data-k-state="flipping"] .k-cv__card{transition-duration:var(--k-slow,320ms)}
+.k-cv__face{position:relative;overflow:hidden;border-radius:var(--k-radius-card,12px);backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--k-surface,#F4F4F4)}
+.k-cv__face img{display:block;width:100%;height:auto;max-width:100%}
+.k-cv__face--back{position:absolute;inset:0;transform:rotateY(180deg)}
+.k-cv__face--back img{height:100%;object-fit:cover}
+
+.k-cv__sheen{position:absolute;inset:0;pointer-events:none;mix-blend-mode:color-dodge;opacity:.35;border-radius:inherit;
+  background-size:200% 200%;background-position:var(--k-sheen-x,50%) var(--k-sheen-y,50%)}
+k-card-viewer[sheen="none"] .k-cv__sheen,k-card-viewer[data-k-sheen="none"] .k-cv__sheen{display:none}
+k-card-viewer[data-k-sheen="holo"] .k-cv__sheen{background-image:linear-gradient(var(--k-sheen-angle,115deg),transparent 20%,#ff7ad9 34%,#7af3ff 44%,#fff58a 54%,#8aff9c 64%,transparent 80%)}
+k-card-viewer[data-k-sheen="foil"] .k-cv__sheen{background-image:linear-gradient(var(--k-sheen-angle,115deg),transparent 25%,#ffffff 40%,#d9c27a 50%,#ffffff 60%,transparent 75%)}
+
+/* Slab: PSA proportions 3.07:5.31 with a label area. */
+k-card-viewer[data-k-kind="slab"] .k-cv__face{aspect-ratio:3.07/5.31;box-sizing:border-box;display:grid;grid-template-rows:auto minmax(0,1fr);gap:4%;padding:5%;
+  background:linear-gradient(160deg,#fbfbfb,#e7e8ea);border:1px solid rgba(10,10,10,.14);border-radius:10px}
+.k-cv__label{min-height:2.6em;box-sizing:border-box;padding:6px 8px;background:#FFFFFF;border:1px solid var(--k-line,#E6E6E6);border-radius:3px;
+  color:var(--k-ink,#0A0A0A);font-family:var(--k-mono,"JetBrains Mono",ui-monospace,monospace);font-size:12px;line-height:1.3;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  overflow:hidden;display:flex;align-items:center}
+.k-cv__window{min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:4px;background:rgba(10,10,10,.04)}
+k-card-viewer[data-k-kind="slab"] .k-cv__window img{width:auto;height:auto;max-height:100%;object-fit:contain}
+k-card-viewer[data-k-kind="slab"] .k-cv__face--back img{height:auto}
+
+/* Reduced motion: no tilt, no sheen; the flip is an instant swap. */
+k-card-viewer[data-k-reduced] .k-cv__card{transform:none;transition:none}
+k-card-viewer[data-k-reduced] .k-cv__sheen{display:none}
+k-card-viewer[data-k-reduced] .k-cv__face--back{display:none;position:relative;transform:none}
+k-card-viewer[data-k-reduced][data-k-side="back"] .k-cv__face--front{display:none}
+k-card-viewer[data-k-reduced][data-k-side="back"] .k-cv__face--back{display:grid}
+k-card-viewer[data-k-reduced][data-k-kind="card"][data-k-side="back"] .k-cv__face--back{display:block}
+@media (prefers-reduced-motion:reduce){
+  .k-cv__card{transform:none !important;transition:none !important}
+  .k-cv__sheen{display:none}
+}

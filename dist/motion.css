@@ -1,0 +1,12 @@
+/* Motion: only transform and opacity animate. Everything off under reduced motion.
+   .k-reveal hides only once the elements script has set data-k-motion on <html>,
+   so pages without the script never lose content. */
+:root[data-k-motion] .k-reveal:not(.is-revealed){opacity:0;transform:translateY(12px)}
+.k-reveal{transition:opacity var(--k-slow,320ms) var(--k-ease,cubic-bezier(.2,.7,.2,1)),transform var(--k-slow,320ms) var(--k-ease,cubic-bezier(.2,.7,.2,1))}
+.k-lift{transition:transform var(--k-fast,120ms) var(--k-ease,cubic-bezier(.2,.7,.2,1))}
+.k-lift:hover{transform:translateY(-2px)}
+@media (prefers-reduced-motion:reduce){
+  :root[data-k-motion] .k-reveal:not(.is-revealed){opacity:1;transform:none}
+  .k-reveal,.k-lift{transition:none}
+  .k-lift:hover{transform:none}
+}

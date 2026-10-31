@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="700" viewBox="0 0 500 700">
+  <rect width="500" height="700" rx="16" fill="#141414"/>
+  <rect x="24" y="24" width="452" height="652" rx="10" fill="#EFFF42"/>
+  <rect x="60" y="80" width="380" height="380" rx="8" fill="#0A0A0A"/>
+  <text x="250" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="120" font-weight="800" fill="#EFFF42">26</text>
+  <text x="60" y="560" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#0A0A0A">FanCon 26</text>
+  <text x="60" y="610" font-family="Courier New, monospace" font-size="22" letter-spacing="3" fill="#0A0A0A">PIM 3 · CITY HALL</text>
+</svg>

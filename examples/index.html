@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="id" data-k-product="kultura">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kultura house kit v0.1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&family=JetBrains+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="../dist/base.css">
+  <style>
+    body{margin:0;background:var(--k-paper);color:var(--k-ink);font-family:var(--k-font)}
+    .wrap{box-sizing:border-box;max-width:1200px;margin:0 auto;padding:40px 16px}
+    section{padding:32px 0;border-top:1px solid var(--k-line)}
+    .stack>*+*{margin-top:16px}
+    .matrix{display:grid;gap:24px}
+    .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+    .row .k-label{width:100%;color:var(--k-muted)}
+    .ink{background:var(--k-ink);padding:16px;border-radius:12px}
+    .viewers{display:grid;gap:32px;grid-template-columns:1fr}
+    .viewers figure{margin:0}
+    .viewers figcaption{margin-top:12px}
+    @media (min-width:640px){.wrap{padding:56px 32px}.viewers{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="k-label">House kit v0.1 · contoh</p>
+    <h1 class="k-h1">Satu kit untuk semua situs Kultura</h1>
+
+    <section id="type" class="stack" aria-labelledby="type-h">
+      <p class="k-label" id="type-h">Skala tipe</p>
+      <p class="k-display">Display</p>
+      <p class="k-h1">Judul satu</p>
+      <p class="k-h2">Judul dua</p>
+      <p class="k-h3">Judul tiga</p>
+      <p class="k-body">Teks badan 17/16 px. Kamu bisa membaca paragraf ini dengan nyaman di layar ponsel murah sekalipun.</p>
+      <p class="k-small">Teks kecil 14 px, batas bawah untuk teks yang wajib dibaca.</p>
+      <p class="k-label">Label mono 12 px</p>
+    </section>
+
+    <section id="buttons" aria-labelledby="buttons-h">
+      <p class="k-label" id="buttons-h">Tombol</p>
+      <div class="matrix" id="matrix"></div>
+    </section>
+
+    <section id="viewer" aria-labelledby="viewer-h">
+      <p class="k-label" id="viewer-h">Penampil kartu</p>
+      <div class="viewers">
+        <figure>
+          <k-card-viewer id="card" src="img/card-front.svg" back="img/card-back.svg" alt="Kartu contoh seri 01" eager>
+            <img src="img/card-front.svg" alt="Kartu contoh seri 01" width="600" height="840">
+          </k-card-viewer>
+          <figcaption class="k-small">Kartu, sheen holo. Ketuk untuk membalik.</figcaption>
+        </figure>
+        <figure>
+          <k-card-viewer id="slab" kind="slab" src="img/slab-card.svg" alt="Slab contoh FanCon 26" label="FanCon 26 · Gem mint 10" eager>
+            <img src="img/slab-card.svg" alt="Slab contoh FanCon 26" width="500" height="700">
+          </k-card-viewer>
+          <figcaption class="k-small">Slab, proporsi 3.07:5.31 dengan area label.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="motion" class="stack" aria-labelledby="motion-h">
+      <p class="k-label" id="motion-h">Gerak</p>
+      <p class="k-body k-reveal">Muncul sekali saat masuk layar: naik 12 px dan memudar.</p>
+      <p><a class="k-btn k-btn--secondary k-lift" href="#motion">Angkat 2 px saat hover</a></p>
+    </section>
+  </main>
+
+  <footer id="footer">
+    <div class="wrap"><p class="k-footer-wordmark" aria-hidden="true">Kultura</p></div>
+    <k-footer-strip id="strip-id" current="kultura" entity="PT Kios Gemar Kreasi"></k-footer-strip>
+    <k-footer-strip id="strip-en" lang="en" current="kultura" entity="PT Kios Gemar Kreasi"></k-footer-strip>
+  </footer>
+
+  <script type="module">
+    import { buttonClass, BUTTON_SIZES, BUTTON_VARIANTS, BUTTON_SHAPES, productPresets } from "../dist/index.js";
+    import "../dist/elements.js";
+
+    const matrix = document.getElementById("matrix");
+    const row = (title, buttons, attrs = {}) => {
+      const r = document.createElement("div");
+      r.className = "row";
+      for (const [k, v] of Object.entries(attrs)) r.setAttribute(k, v);
+      r.innerHTML = `<p class="k-label">${title}</p>` + buttons.join("");
+      matrix.append(r);
+    };
+    const btn = (opts, text = "Mulai pengajuan") => `<button type="button" class="${buttonClass(opts)}" data-cls="${buttonClass(opts)}">${text}</button>`;
+
+    for (const shape of BUTTON_SHAPES)
+      for (const variant of BUTTON_VARIANTS)
+        row(`${variant} · ${shape}`, BUTTON_SIZES.map((size) => btn({ size, variant, shape })));
+    row("compact mono", BUTTON_VARIANTS.map((variant) => btn({ size: "compact", variant, mono: true }, "Lacak")));
+    row("disabled", [`<button type="button" class="${buttonClass()}" disabled>Mulai pengajuan</button>`, `<button type="button" class="${buttonClass({ variant: "secondary" })}" disabled>Batal</button>`]);
+    for (const product of Object.keys(productPresets).filter((p) => productPresets[p]))
+      row(`accent · ${product}`, BUTTON_SIZES.map((size) => btn({ size, variant: "accent" })), { "data-k-product": product });
+  </script>
+</body>
+</html>
