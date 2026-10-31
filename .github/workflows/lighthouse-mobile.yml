@@ -1,0 +1,114 @@
+# Reusable Lighthouse mobile check. Product repos call it from their fast tier on PRs that
+# touch public pages, against the PR preview URL. workflow_call only: no trigger of its own.
+#
+#   lighthouse:
+#     needs: changes
+#     if: needs.changes.outputs.public == 'true' && github.event_name == 'pull_request'
+#     uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@v0.1.0
+#     with:
+#       paths: |
+#         /
+#         /en
+#     secrets: inherit
+#   The calling job needs: permissions: { contents: read, deployments: read }
+name: Lighthouse mobile
+on:
+  workflow_call:
+    inputs:
+      paths:
+        description: Page paths (one per line or comma separated), or full URLs.
+        type: string
+        required: true
+      base-url:
+        description: Preview base URL. Empty means wait for the deployment on the PR head commit.
+        type: string
+        default: ""
+      environment:
+        description: Deployment environment name to wait for (Vercel uses "Preview").
+        type: string
+        default: Preview
+      wait-minutes:
+        type: number
+        default: 10
+      runs:
+        description: Lighthouse runs per page; the median is gated.
+        type: number
+        default: 3
+      kit-ref:
+        description: Kit tag that supplies the check script.
+        type: string
+        default: v0.1.0
+    secrets:
+      HOUSE_KIT_READ_TOKEN:
+        description: Read access to adesulco/kultura-house-kit while the repo is private.
+        required: false
+      VERCEL_AUTOMATION_BYPASS_SECRET:
+        description: Lets Lighthouse through Vercel preview protection.
+        required: false
+
+permissions:
+  contents: read
+  deployments: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Find the preview URL
+        id: url
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ inputs.base-url }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          WAIT: ${{ inputs.wait-minutes }}
+        run: |
+          if [ -n "$BASE" ]; then echo "base=$BASE" >> "$GITHUB_OUTPUT"; exit 0; fi
+          deadline=$(( $(date +%s) + WAIT * 60 ))
+          while [ "$(date +%s)" -lt "$deadline" ]; do
+            for id in $(gh api "repos/$GITHUB_REPOSITORY/deployments?sha=$SHA&environment=$ENVIRONMENT" --jq '.[].id'); do
+              url=$(gh api "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" --jq '[.[] | select(.state=="success")][0].environment_url // empty')
+              if [ -n "$url" ]; then echo "base=$url" >> "$GITHUB_OUTPUT"; echo "Preview: $url"; exit 0; fi
+            done
+            sleep 15
+          done
+          echo "No successful $ENVIRONMENT deployment for $SHA within $WAIT minutes." >&2
+          exit 1
+
+      - name: Check out the kit
+        uses: actions/checkout@v4
+        with:
+          repository: adesulco/kultura-house-kit
+          ref: ${{ inputs.kit-ref }}
+          token: ${{ secrets.HOUSE_KIT_READ_TOKEN || github.token }}
+          path: .house-kit
+          sparse-checkout: scripts
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - name: Cache Lighthouse
+        uses: actions/cache@v4
+        with:
+          path: .lh-tools/node_modules
+          key: lighthouse-13.6.0-chrome-launcher-1.2.2
+
+      - name: Install Lighthouse
+        run: |
+          mkdir -p .lh-tools && cd .lh-tools
+          cp ../.house-kit/scripts/lighthouse-mobile.mjs .
+          [ -f package.json ] || echo '{"private":true,"type":"module"}' > package.json
+          [ -d node_modules/lighthouse ] || npm install --no-save --no-package-lock --no-audit --no-fund lighthouse@13.6.0 chrome-launcher@1.2.2
+
+      # The runner image ships Google Chrome, so no browser download per run.
+      - name: Run Lighthouse mobile
+        env:
+          LH_BASE_URL: ${{ steps.url.outputs.base }}
+          LH_PATHS: ${{ inputs.paths }}
+          LH_RUNS: ${{ inputs.runs }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          export CHROME_PATH="$(command -v google-chrome || command -v chromium)"
+          if [ -n "$BYPASS" ]; then export LH_EXTRA_HEADERS="{\"x-vercel-protection-bypass\":\"$BYPASS\"}"; fi
+          node .lh-tools/lighthouse-mobile.mjs
