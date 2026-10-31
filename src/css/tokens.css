@@ -1,0 +1,28 @@
+/* @kultura/house-kit tokens v0.1. Custom properties only. Names are final for v0.1. */
+:root{
+  /* brand */
+  --k-red-500:#EE2F42;   /* fills, large type >= 24px, logo, ecosystem strip */
+  --k-red-700:#C81E2F;   /* links, small buttons, text-size red (5.7:1 on white). PSA site's #C81E30 maps here */
+  --k-red-800:#B0182A;   /* pressed state, focus ring */
+  /* neutrals */
+  --k-ink:#0A0A0A; --k-paper:#FFFFFF; --k-surface:#F4F4F4; --k-line:#E6E6E6; --k-muted:#6E6E76;
+  /* status (never red for form errors) */
+  --k-amber-text:#8A5A00; --k-amber-tint:#FFF4DE; --k-amber-line:#F2DCA8;
+  --k-green:#0F7A3D; --k-green-tint:#E9F8EF;
+  /* product accent slot: each product sets these two, contrast-gated */
+  --k-accent:var(--k-red-500); --k-on-accent:#FFFFFF;
+  /* type */
+  --k-font:"Outfit",system-ui,sans-serif;
+  --k-mono:"JetBrains Mono",ui-monospace,monospace;
+  /* radius */
+  --k-radius-pill:9999px; --k-radius-console:8px; --k-radius-card:12px;
+  /* motion */
+  --k-fast:120ms; --k-base:200ms; --k-slow:320ms; --k-ease:cubic-bezier(.2,.7,.2,1);
+}
+
+/* Product accent presets. Set data-k-product on <html>. FanHub sets none (DS-2). */
+[data-k-product="kultura"],[data-k-product="kult"],[data-k-product="kios"]{--k-accent:#EE2F42;--k-on-accent:#FFFFFF;}
+[data-k-product="fancon"]{--k-accent:#EFFF42;--k-on-accent:#0A0A0A;}
+[data-k-product="floorpass"]{--k-accent:#C74416;--k-on-accent:#FFFFFF;}
+[data-k-product="gelar"]{--k-accent:#141414;--k-on-accent:#FFF4E1;}
+[data-k-product="fangir"]{--k-accent:#002366;--k-on-accent:#FFFFFF;}

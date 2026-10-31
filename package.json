@@ -1,6 +1,6 @@
 {
   "name": "@kultura/house-kit",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Shared colours, type, buttons, footer strip, motion rules, performance check and card viewer for Kultura Digital sites.",
   "license": "UNLICENSED",
@@ -14,18 +14,104 @@
   "engines": {
     "node": ">=20"
   },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./tokens.css": "./dist/tokens.css",
+    "./base.css": "./dist/base.css",
+    "./footer.css": "./dist/footer.css",
+    "./motion.css": "./dist/motion.css",
+    "./tailwind": {
+      "import": {
+        "types": "./dist/tailwind.d.ts",
+        "default": "./dist/tailwind.js"
+      },
+      "require": {
+        "types": "./dist/tailwind.d.cts",
+        "default": "./dist/tailwind.cjs"
+      }
+    },
+    "./elements": {
+      "import": {
+        "types": "./dist/elements.d.ts",
+        "default": "./dist/elements.js"
+      },
+      "require": {
+        "types": "./dist/elements.d.cts",
+        "default": "./dist/elements.cjs"
+      }
+    },
+    "./react": {
+      "import": {
+        "types": "./dist/react.d.ts",
+        "default": "./dist/react.js"
+      },
+      "require": {
+        "types": "./dist/react.d.cts",
+        "default": "./dist/react.cjs"
+      }
+    },
+    "./ecosystem.json": "./dist/ecosystem.json",
+    "./kultura-house-kit.css": "./dist/kultura-house-kit.css",
+    "./kultura-house-kit.js": "./dist/kultura-house-kit.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "scripts/lighthouse-mobile.mjs",
+    "README.md"
+  ],
+  "sideEffects": [
+    "*.css",
+    "./dist/elements.js",
+    "./dist/elements.cjs",
+    "./dist/kultura-house-kit.js"
+  ],
   "scripts": {
+    "build": "rm -rf dist && tsup && node scripts/build-css.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
-    "check:naming": "node scripts/naming-guard.mjs"
+    "test:e2e": "playwright test",
+    "matrix": "node scripts/button-matrix.mjs",
+    "check:naming": "node scripts/naming-guard.mjs",
+    "check:dist": "pnpm build && git diff --exit-code -- dist"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.64.1",
     "@types/node": "^22.20.5",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "chrome-launcher": "^1.2.2",
     "eslint": "^9.39.5",
     "globals": "^17.13.0",
     "jsdom": "^27.4.0",
+    "lighthouse": "13",
+    "lightningcss": "^1.33.0",
+    "postcss": "^8.5.32",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^9.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.72.1",
     "vitest": "^5.0.5",
