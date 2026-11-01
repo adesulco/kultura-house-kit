@@ -3,7 +3,7 @@
 exports[`button matrix > matches the committed snapshot of computed styles 1`] = `
 {
   "k-btn k-btn--accent": {
-    "background": "#EE2F42",
+    "background": "#C81E2F",
     "border": "1.5px solid transparent",
     "border-radius": "9999px",
     "color": "#FFFFFF",
@@ -68,7 +68,7 @@ exports[`button matrix > matches the committed snapshot of computed styles 1`] =
     "text-transform": "uppercase",
   },
   "k-btn k-btn--accent k-btn--console": {
-    "background": "#EE2F42",
+    "background": "#C81E2F",
     "border": "1.5px solid transparent",
     "border-radius": "8px",
     "color": "#FFFFFF",
@@ -81,7 +81,7 @@ exports[`button matrix > matches the committed snapshot of computed styles 1`] =
     "text-transform": "none",
   },
   "k-btn k-btn--accent k-btn--hero": {
-    "background": "#EE2F42",
+    "background": "#C81E2F",
     "border": "1.5px solid transparent",
     "border-radius": "9999px",
     "color": "#FFFFFF",
@@ -94,7 +94,7 @@ exports[`button matrix > matches the committed snapshot of computed styles 1`] =
     "text-transform": "none",
   },
   "k-btn k-btn--accent k-btn--hero k-btn--console": {
-    "background": "#EE2F42",
+    "background": "#C81E2F",
     "border": "1.5px solid transparent",
     "border-radius": "8px",
     "color": "#FFFFFF",
@@ -315,7 +315,7 @@ exports[`button matrix > matches the committed snapshot of computed styles 1`] =
     "text-transform": "none",
   },
   "k-btn k-btn--primary": {
-    "background": "#EE2F42",
+    "background": "#C81E2F",
     "border": "1.5px solid transparent",
     "border-radius": "9999px",
     "color": "#FFFFFF",
@@ -380,7 +380,7 @@ exports[`button matrix > matches the committed snapshot of computed styles 1`] =
     "text-transform": "uppercase",
   },
   "k-btn k-btn--primary k-btn--console": {
-    "background": "#EE2F42",
+    "background": "#C81E2F",
     "border": "1.5px solid transparent",
     "border-radius": "8px",
     "color": "#FFFFFF",
@@ -393,7 +393,7 @@ exports[`button matrix > matches the committed snapshot of computed styles 1`] =
     "text-transform": "none",
   },
   "k-btn k-btn--primary k-btn--hero": {
-    "background": "#EE2F42",
+    "background": "#C81E2F",
     "border": "1.5px solid transparent",
     "border-radius": "9999px",
     "color": "#FFFFFF",
@@ -406,7 +406,7 @@ exports[`button matrix > matches the committed snapshot of computed styles 1`] =
     "text-transform": "none",
   },
   "k-btn k-btn--primary k-btn--hero k-btn--console": {
-    "background": "#EE2F42",
+    "background": "#C81E2F",
     "border": "1.5px solid transparent",
     "border-radius": "8px",
     "color": "#FFFFFF",

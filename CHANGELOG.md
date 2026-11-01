@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1
+
+- Red buttons fill with red-700 at every size; red-500 with white text was 4.1:1. The accent variant takes each preset's text-safe pair at every size.
+- Footer strip: links and the entity line are 19 px bold, so all its white-on-red-500 text is large (AA at 3:1).
+- Footer strip: `--k-strip-max` and `--k-strip-pad` let a site match its own container.
+- Lighthouse workflow checks out the v0.1.1 script by default.
+
 ## 0.1.0
 
 First release.

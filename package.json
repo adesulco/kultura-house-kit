@@ -1,6 +1,6 @@
 {
   "name": "@kultura/house-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Shared colours, type, buttons, footer strip, motion rules, performance check and card viewer for Kultura Digital sites.",
   "license": "UNLICENSED",

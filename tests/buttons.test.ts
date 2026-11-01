@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buttonClass, BUTTON_SHAPES, BUTTON_SIZES, BUTTON_VARIANTS } from "../src/button";
-import { AA_LARGE, AA_TEXT, contrastRatio } from "../src/contrast";
+import { AA_TEXT, contrastRatio } from "../src/contrast";
 import { productPresets, tokens } from "../src/tokens";
 import { readStyles } from "./support/style-reader";
 
@@ -49,10 +49,11 @@ describe("button matrix", () => {
     }
   });
 
-  it("switches red fills to red-700 at compact size", () => {
-    expect(matrix[buttonClass({ size: "compact", variant: "accent" })]!.background).toBe(tokens["red-700"]);
-    expect(matrix[buttonClass({ size: "compact" })]!.background).toBe(tokens["red-700"]);
-    expect(matrix[buttonClass({ size: "default" })]!.background).toBe(tokens["red-500"]);
+  it("fills red buttons with red-700 at every size", () => {
+    for (const size of BUTTON_SIZES) {
+      expect(matrix[buttonClass({ size })]!.background, size).toBe(tokens["red-700"]);
+      expect(matrix[buttonClass({ size, variant: "accent" })]!.background, size).toBe(tokens["red-700"]);
+    }
     expect(contrastRatio(tokens["red-700"], "#FFFFFF")).toBeGreaterThanOrEqual(AA_TEXT);
   });
 
@@ -77,13 +78,8 @@ describe("button matrix", () => {
   it("meets contrast for every filled variant", () => {
     for (const [cls, s] of Object.entries(matrix)) {
       if (!isHex(s.background) || !isHex(s.color)) continue;
-      const ratio = contrastRatio(s.background!, s.color!);
-      // Compact text (14 px) always needs 4.5:1. Red-500 at 16 and 18 px bold is the decided
-      // spec (plan section 7) and measures 4.1:1; it is held at the large-type floor and
-      // listed as an open question in STATUS.md.
-      const compact = cls.includes("k-btn--compact");
-      const floor = !compact && s.background === tokens["red-500"] ? AA_LARGE : AA_TEXT;
-      expect(ratio, cls).toBeGreaterThanOrEqual(floor);
+      // Button text is 14 to 18 px, below the large-text size, so every fill needs 4.5:1.
+      expect(contrastRatio(s.background!, s.color!), cls).toBeGreaterThanOrEqual(AA_TEXT);
     }
   });
 });
@@ -99,12 +95,12 @@ describe("accent button per product preset", () => {
   for (const [product, preset] of Object.entries(productPresets)) {
     if (!preset) continue;
     it(`${product}: accent button reads the preset`, () => {
-      const s = computed(buttonClass({ variant: "accent" }), product);
-      expect(s.background?.toUpperCase()).toBe(preset.accent);
-      expect(s.color?.toUpperCase()).toBe(preset.onAccent);
-      const c = computed(buttonClass({ variant: "accent", size: "compact" }), product);
-      expect(c.background?.toUpperCase(), "compact uses the text pair").toBe(preset.textPair.bg);
-      expect(contrastRatio(c.background!, c.color!)).toBeGreaterThanOrEqual(AA_TEXT);
+      for (const size of BUTTON_SIZES) {
+        const s = computed(buttonClass({ variant: "accent", size }), product);
+        expect(s.background?.toUpperCase(), `${size} uses the text pair`).toBe(preset.textPair.bg);
+        expect(s.color?.toUpperCase()).toBe(preset.onAccent);
+        expect(contrastRatio(s.background!, s.color!)).toBeGreaterThanOrEqual(AA_TEXT);
+      }
     });
   }
 });

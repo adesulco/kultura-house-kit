@@ -4,7 +4,7 @@
 #   lighthouse:
 #     needs: changes
 #     if: needs.changes.outputs.public == 'true' && github.event_name == 'pull_request'
-#     uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@v0.1.0
+#     uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@v0.1.1
 #     with:
 #       paths: |
 #         /
@@ -37,7 +37,7 @@ on:
       kit-ref:
         description: Kit tag that supplies the check script.
         type: string
-        default: v0.1.0
+        default: v0.1.1
     secrets:
       HOUSE_KIT_READ_TOKEN:
         description: Only needed if the kit repo is ever made private again.

@@ -88,3 +88,40 @@ describe("footer strip font", () => {
     expect(readStyles(strip, withFont)("font-family")).toBe(`"__Outfit_a1b2c3",system-ui,sans-serif`);
   });
 });
+
+describe("footer strip contrast and grid", () => {
+  const load = async () => {
+    const { readFileSync } = await import("node:fs");
+    const { readStyles } = await import("./support/style-reader");
+    const { contrastRatio, AA_LARGE } = await import("../src/contrast");
+    return { css: readFileSync(`${process.cwd()}/src/css/footer-strip.css`, "utf8"), readStyles, contrastRatio, AA_LARGE };
+  };
+
+  it("sets every text at large size, since white on red-500 is 4.1:1", async () => {
+    const { css, readStyles, contrastRatio, AA_LARGE } = await load();
+    document.body.innerHTML = renderFooterStripHTML({ entity: "PT Kios Gemar Kreasi" });
+    const strip = document.querySelector("k-footer-strip")!;
+    const bg = readStyles(strip, css)("--k-strip-bg")!;
+    const fg = readStyles(strip, css)("--k-strip-fg")!;
+    expect(contrastRatio(bg, fg)).toBeGreaterThanOrEqual(AA_LARGE);
+    for (const sel of [".k-footer-strip__line", ".k-footer-strip__link", ".k-footer-strip__entity"]) {
+      const read = readStyles(strip.querySelector(sel)!, css);
+      const px = parseFloat(read("font-size")!);
+      const weight = Number(read("font-weight"));
+      // WCAG large text: 24 px, or 18.66 px (14 pt) and bold.
+      expect(px >= 24 || (px >= 18.66 && weight >= 700), sel).toBe(true);
+    }
+  });
+
+  it("takes the site's container through --k-strip-max and --k-strip-pad", async () => {
+    const { css, readStyles } = await load();
+    document.body.innerHTML = `<div class="k">${renderFooterStripHTML({})}</div>`;
+    const inner = document.querySelector(".k-footer-strip__inner")!;
+    expect(readStyles(inner, css)("max-width")).toBe("1280px");
+    expect(readStyles(inner, css)("padding")).toBe("24px 16px");
+    expect(readStyles(inner, css, { desktop: true })("padding")).toBe("28px 32px");
+    const site = `${css}\n.k{--k-strip-max:1200px;--k-strip-pad:64px}`;
+    expect(readStyles(inner, site)("max-width")).toBe("1200px");
+    expect(readStyles(inner, site, { desktop: true })("padding")).toBe("28px 64px");
+  });
+});

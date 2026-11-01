@@ -13,17 +13,16 @@
 .k-btn--hero{--k-btn-h:52px;--k-btn-fs:18px}
 .k-btn--compact{--k-btn-h:36px;--k-btn-fs:14px}
 
-.k-btn--primary{--k-btn-bg:var(--k-red-500);--k-btn-fg:#FFFFFF}
-.k-btn--primary.k-btn--compact{--k-btn-bg:var(--k-red-700)}
+/* Red fills with white text sit on red-700 (5.7:1) at every size; red-500 is 4.1:1 (v0.1.1). */
+.k-btn--primary{--k-btn-bg:var(--k-red-700);--k-btn-fg:#FFFFFF}
 .k-btn--secondary{--k-btn-bg:transparent;--k-btn-fg:var(--k-ink);--k-btn-bd:var(--k-ink)}
 .k-btn--ghost{--k-btn-bg:transparent;--k-btn-fg:var(--k-ink)}
-.k-btn--accent{--k-btn-bg:var(--k-accent);--k-btn-fg:var(--k-on-accent)}
-/* Accent text below 16 px: red presets sit on red-700, never on red-500. Inherited, so the
-   nearest data-k-product scope wins. */
-:root{--k-btn-accent-compact:var(--k-red-700)}
-[data-k-product]{--k-btn-accent-compact:var(--k-accent)}
-[data-k-product="kultura"],[data-k-product="kult"],[data-k-product="kios"]{--k-btn-accent-compact:var(--k-red-700)}
-.k-btn--accent.k-btn--compact{--k-btn-bg:var(--k-btn-accent-compact)}
+/* Accent fill: the product accent, except red presets, which sit on red-700 at every size.
+   Inherited, so the nearest data-k-product scope wins. */
+:root{--k-btn-accent-fill:var(--k-red-700)}
+[data-k-product]{--k-btn-accent-fill:var(--k-accent)}
+[data-k-product="kultura"],[data-k-product="kult"],[data-k-product="kios"]{--k-btn-accent-fill:var(--k-red-700)}
+.k-btn--accent{--k-btn-bg:var(--k-btn-accent-fill);--k-btn-fg:var(--k-on-accent)}
 .k-btn--danger{--k-btn-bg:var(--k-ink);--k-btn-fg:#FFFFFF}
 
 .k-btn--console{border-radius:var(--k-radius-console)}

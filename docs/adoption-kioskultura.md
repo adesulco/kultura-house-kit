@@ -4,17 +4,17 @@ These repos are Nuxt (Vue) on GitLab and are read-only for now, so they take the
 
 ## Files
 
-From the GitHub release `v0.1.0` of `adesulco/kultura-house-kit`, download:
+From the GitHub release `v0.1.1` of `adesulco/kultura-house-kit`, download:
 
 - `kultura-house-kit.css`: tokens, type scale, buttons, focus, motion, footer strip and card viewer, minified
 - `kultura-house-kit.js`: registers `<k-card-viewer>` and `<k-footer-strip>` and starts `.k-reveal` (one file, no dependencies)
 - `ecosystem.json`: the footer links, for reference
 
 ```bash
-gh release download v0.1.0 -R adesulco/kultura-house-kit -p 'kultura-house-kit.*' -D assets/vendor/house-kit
+gh release download v0.1.1 -R adesulco/kultura-house-kit -p 'kultura-house-kit.*' -D assets/vendor/house-kit
 ```
 
-Commit them under `assets/vendor/house-kit/` with a one-line `VERSION` file holding `v0.1.0`.
+Commit them under `assets/vendor/house-kit/` with a one-line `VERSION` file holding `v0.1.1`.
 
 ## Steps
 

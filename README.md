@@ -7,7 +7,7 @@ Plan of record: `04_Digital/00_Strategy/Kultura_Digital_Web_Design_Benchmark_v2_
 ## Install
 
 ```json
-"@kultura/house-kit": "github:adesulco/kultura-house-kit#v0.1.0"
+"@kultura/house-kit": "github:adesulco/kultura-house-kit#v0.1.1"
 ```
 
 `dist/` is committed, so installing from the tag needs no build step. The repository is public (decided 31 Oct 2026), so CI and Vercel install it with no token.
@@ -38,7 +38,7 @@ Put the product key on `<html>`. It sets `--k-accent` and `--k-on-accent`.
 
 | Product | `--k-accent` | `--k-on-accent` | Notes |
 |---|---|---|---|
-| `kultura`, `kult`, `kios` (default) | `#EE2F42` | `#FFFFFF` | Fills and type 24 px and up. Text below 16 px sits on red-700 `#C81E2F` |
+| `kultura`, `kult`, `kios` (default) | `#EE2F42` | `#FFFFFF` | Band fills and type 24 px and up. Buttons and white text below large size sit on red-700 `#C81E2F` |
 | `fancon` | `#EFFF42` | `#0A0A0A` | FanCon lime, used on ink surfaces |
 | `floorpass` | `#C74416` | `#FFFFFF` | 4.9:1. `#E8632B` is retired (3.4:1) |
 | `gelar` | `#141414` | `#FFF4E1` | |
@@ -52,7 +52,7 @@ A unit test computes WCAG contrast for every preset and fails under 4.5:1.
 | Token | Value | Use |
 |---|---|---|
 | `--k-red-500` | `#EE2F42` | Fills, type 24 px and up, logo, ecosystem strip |
-| `--k-red-700` | `#C81E2F` | Links, small buttons, text-size red (5.7:1 on white). The PSA site's `#C81E30` maps here |
+| `--k-red-700` | `#C81E2F` | Links, every red button fill, text-size red (5.7:1 on white). The PSA site's `#C81E30` maps here |
 | `--k-red-800` | `#B0182A` | Pressed state, focus ring |
 | `--k-ink` / `--k-paper` | `#0A0A0A` / `#FFFFFF` | |
 | `--k-surface` / `--k-line` / `--k-muted` | `#F4F4F4` / `#E6E6E6` / `#6E6E76` | |
@@ -91,6 +91,8 @@ const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500"], display: "swa
 
 `.k-btn` + size (`--hero` 52/18, default 44/16, `--compact` 36/14) + variant (`--primary`, `--secondary`, `--ghost`, `--accent`, `--danger`) + shape (`--pill` default, `--console` 8 px). `--mono` gives mono caps and only works with `--compact`. Icon goes in `<span class="k-btn__icon">` after the label.
 
+Red fills are red-700 at every size: button text is 14 to 18 px, and white on red-500 is only 4.1:1. The accent variant takes each product's text-safe pair, so red presets fill with red-700 and the other presets with their own accent.
+
 ![Button matrix](docs/button-matrix.png)
 
 Generated from `examples/` with `pnpm matrix`. Computed styles for every combination are snapshot-tested.
@@ -108,6 +110,8 @@ import { FooterStrip } from "@kultura/house-kit/react";
 ```
 
 Renders plain HTML on the server, so nothing shifts. Outside React use `<k-footer-strip current="gelar" entity="PT Kultura Digital Kreasi, Jakarta">` with the elements script, or `renderFooterStripHTML()` on the server. The big product wordmark above the link columns stays in each product's footer; the kit provides `.k-footer-wordmark`.
+
+The strip keeps the red-500 band, so all its text is large (19 px bold and up): white on red-500 is 4.1:1, which passes only as large text. To line it up with a site's own container, set `--k-strip-max` (default 1280px) and `--k-strip-pad` (default 16px on phones, 32px from 640px) on any ancestor, for example `.k{--k-strip-max:var(--k-maxw);--k-strip-pad:var(--k-pad)}`.
 
 ## Card viewer
 
@@ -148,7 +152,7 @@ Product repos call the reusable workflow from their fast tier on PRs that touch 
     needs: changes
     if: needs.changes.outputs.public == 'true' && github.event_name == 'pull_request'
     permissions: { contents: read, deployments: read }
-    uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@v0.1.0
+    uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@v0.1.1
     with:
       paths: |
         /
