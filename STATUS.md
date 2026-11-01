@@ -1,6 +1,6 @@
 # STATUS: kultura-house-kit
 
-Updated 31 Oct 2026 by Build. Plan of record: Benchmark v2, decisions DS-1 to DS-6.
+Updated 1 Nov 2026 by Build. Plan of record: Benchmark v2, decisions DS-1 to DS-6.
 
 ## Where it stands
 
@@ -11,7 +11,7 @@ Updated 31 Oct 2026 by Build. Plan of record: Benchmark v2, decisions DS-1 to DS
 | [#2 House kit v0.1](https://github.com/adesulco/kultura-house-kit/pull/2) | Merged 31 Oct, after a review pass (fixes below) |
 | Tag [`v0.1.0`](https://github.com/adesulco/kultura-house-kit/releases/tag/v0.1.0) | Tagged 31 Oct on `9adda49`. Release carries `kultura-house-kit.css`, `kultura-house-kit.js`, `tokens.css`, `ecosystem.json` |
 | [kultura-co-id #192](https://github.com/adesulco/kultura-co-id/pull/192) | Draft. Tokens, `kultura` preset, `--accent` on red-700, footer strip in place of the bottom rule, Lighthouse job. Walked at 390 and 1280: no change except the strip |
-| [fancon-id #26](https://github.com/adesulco/fancon-id/pull/26) | Draft. Install and `fancon` preset only |
+| [fancon-id #26](https://github.com/adesulco/fancon-id/pull/26) | Merged 1 Nov. Install and `fancon` preset only; no visual change |
 | Gelar | Waits for PR-D2 (planned 13 Nov) |
 | `adesulco/kultura-house-kit-old` | The first private copy, renamed and kept private. Its old commits carry a personal email, which is why the public repo was created fresh. Safe to delete |
 
