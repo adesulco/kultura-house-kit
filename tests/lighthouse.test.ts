@@ -66,6 +66,7 @@ describe("protected previews", () => {
     expect(u.pathname).toBe("/robots.txt");
     expect(u.searchParams.get("x-vercel-protection-bypass")).toBe("s3cret");
     expect(u.searchParams.get("x-vercel-set-bypass-cookie")).toBe("true");
+    expect(new URL(lh.bypassUrl("https://p-abc.vercel.app/en", "s", "/en")).pathname).toBe("/en");
   });
 
   it("reads the secret from LH_VERCEL_BYPASS and never turns it into a header", () => {
@@ -85,5 +86,7 @@ describe("protected previews", () => {
     expect(wf).toContain("LH_VERCEL_BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}");
     expect(wf).not.toMatch(/x-vercel-protection-bypass/);
     expect(wf).not.toMatch(/LH_EXTRA_HEADERS/);
+    // The script comes from the workflow's own commit unless a caller overrides it.
+    expect(wf).toContain("ref: ${{ inputs.kit-ref || github.job_workflow_sha }}");
   });
 });

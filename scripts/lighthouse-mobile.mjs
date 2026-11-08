@@ -34,9 +34,9 @@ export function parseArgs(argv, env = process.env) {
   return out;
 }
 
-/** Vercel's bypass link for the URL's host: a small path, the secret, and "set a cookie". */
-export function bypassUrl(url, secret) {
-  const u = new URL("/robots.txt", url);
+/** Vercel's bypass link on the URL's host: the given path (a small file by default), the secret, and "set a cookie". */
+export function bypassUrl(url, secret, path = "/robots.txt") {
+  const u = new URL(path, url);
   u.searchParams.set("x-vercel-protection-bypass", secret);
   u.searchParams.set("x-vercel-set-bypass-cookie", "true");
   return u.toString();
@@ -54,6 +54,13 @@ async function cdpSession(wsUrl) {
   let id = 0;
   const pending = new Map();
   const listeners = new Set();
+  // A dropped connection (Chrome crashed, tab closed) fails every pending call at once.
+  const failAll = () => {
+    for (const { reject } of pending.values()) reject(new Error("DevTools connection closed"));
+    pending.clear();
+  };
+  ws.onclose = failAll;
+  ws.onerror = failAll;
   ws.onmessage = (ev) => {
     const msg = JSON.parse(String(ev.data));
     if (msg.id && pending.has(msg.id)) {
@@ -66,9 +73,10 @@ async function cdpSession(wsUrl) {
     }
   };
   return {
-    send: (method, params = {}) => new Promise((resolve, reject) => {
+    send: (method, params = {}, timeoutMs = 30000) => new Promise((resolve, reject) => {
       const n = ++id;
-      pending.set(n, { resolve, reject });
+      const t = setTimeout(() => { pending.delete(n); reject(new Error(`Timed out on ${method}`)); }, timeoutMs);
+      pending.set(n, { resolve: (v) => { clearTimeout(t); resolve(v); }, reject: (e) => { clearTimeout(t); reject(e); } });
       ws.send(JSON.stringify({ id: n, method, params }));
     }),
     once: (method, timeoutMs) => new Promise((resolve, reject) => {
@@ -83,29 +91,40 @@ async function cdpSession(wsUrl) {
 /**
  * Sets Vercel's bypass cookie for the URL's host in the Chrome on `port`, through a throwaway tab.
  * Vercel answers the bypass link with a redirect that carries Set-Cookie; its docs do not name the
- * cookie, so any cookie for the host counts (each run starts from a fresh Chrome profile).
- * Throws (with the secret redacted) when no cookie comes back.
+ * cookie, so success is: the tab ends on the preview host and the host has a cookie (each run
+ * starts from a fresh Chrome profile). Throws, with the secret redacted, otherwise.
  */
 export async function primeBypass(port, url, secret, { timeoutMs = 30000 } = {}) {
   const origin = `http://127.0.0.1:${port}`;
+  const target = new URL(url);
   const tab = await (await fetch(`${origin}/json/new?about:blank`, { method: "PUT" })).json();
-  const cdp = await cdpSession(tab.webSocketDebuggerUrl);
+  let cdp;
   try {
+    cdp = await cdpSession(tab.webSocketDebuggerUrl);
     await cdp.send("Page.enable");
     await cdp.send("Network.enable");
-    const loaded = cdp.once("Page.loadEventFired", timeoutMs);
-    await cdp.send("Page.navigate", { url: bypassUrl(url, secret) });
-    await loaded;
-    const { cookies } = await cdp.send("Network.getCookies", { urls: [new URL(url).origin + "/"] });
-    if (!cookies.length) {
-      throw new Error(`The bypass link set no cookie for ${new URL(url).host}: check VERCEL_AUTOMATION_BYPASS_SECRET.`);
+    // A small file first; the measured page's own path if that set nothing (Vercel's docs do not
+    // say whether every path takes the bypass link).
+    let landed = "";
+    for (const path of ["/robots.txt", target.pathname]) {
+      const loaded = cdp.once("Page.loadEventFired", timeoutMs);
+      await cdp.send("Page.navigate", { url: bypassUrl(url, secret, path) });
+      await loaded;
+      const { currentIndex, entries } = await cdp.send("Page.getNavigationHistory");
+      landed = new URL(entries[currentIndex].url).origin;
+      const { cookies } = await cdp.send("Network.getCookies", { urls: [target.origin + "/"] });
+      // A wrong secret ends on the sign-in host, even if a nonce cookie was set on the way.
+      if (landed === target.origin && cookies.length) return;
     }
+    throw new Error(landed !== target.origin
+      ? `The bypass link redirected to ${landed}: check VERCEL_AUTOMATION_BYPASS_SECRET.`
+      : `The bypass link set no cookie for ${target.host}: check VERCEL_AUTOMATION_BYPASS_SECRET.`);
   } catch (err) {
     // No `cause`: the original error can carry the bypass URL, and with it the secret.
     // eslint-disable-next-line preserve-caught-error
     throw new Error(redact(err instanceof Error ? err.message : err, secret));
   } finally {
-    cdp.close();
+    cdp?.close();
     await fetch(`${origin}/json/close/${tab.id}`, { method: "PUT" }).catch(() => {});
   }
 }
