@@ -58,3 +58,32 @@ describe("lighthouse mobile check", () => {
     expect(lh.median([1, 2, 3, 4])).toBe(2.5);
   });
 });
+
+describe("protected previews", () => {
+  it("builds Vercel's bypass link on the page's host, not the page itself", () => {
+    const u = new URL(lh.bypassUrl("https://p-abc.vercel.app/en?x=1", "s3cret"));
+    expect(u.origin).toBe("https://p-abc.vercel.app");
+    expect(u.pathname).toBe("/robots.txt");
+    expect(u.searchParams.get("x-vercel-protection-bypass")).toBe("s3cret");
+    expect(u.searchParams.get("x-vercel-set-bypass-cookie")).toBe("true");
+  });
+
+  it("reads the secret from LH_VERCEL_BYPASS and never turns it into a header", () => {
+    const args = lh.parseArgs([], { LH_BASE_URL: "https://p.vercel.app", LH_PATHS: "/en", LH_VERCEL_BYPASS: "s3cret" });
+    expect(args.bypass).toBe("s3cret");
+    expect(args.headers).toBeUndefined();
+  });
+
+  it("redacts the secret from any text", () => {
+    expect(lh.redact("failed at https://p.vercel.app/robots.txt?x-vercel-protection-bypass=s3cret", "s3cret")).not.toContain("s3cret");
+    expect(lh.redact("nothing to hide", undefined)).toBe("nothing to hide");
+  });
+
+  it("the reusable workflow never builds a header from the secret", async () => {
+    const { readFileSync } = await import("node:fs");
+    const wf = readFileSync(`${process.cwd()}/.github/workflows/lighthouse-mobile.yml`, "utf8");
+    expect(wf).toContain("LH_VERCEL_BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}");
+    expect(wf).not.toMatch(/x-vercel-protection-bypass/);
+    expect(wf).not.toMatch(/LH_EXTRA_HEADERS/);
+  });
+});

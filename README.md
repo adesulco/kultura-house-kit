@@ -7,7 +7,7 @@ Plan of record: `04_Digital/00_Strategy/Kultura_Digital_Web_Design_Benchmark_v2_
 ## Install
 
 ```json
-"@kultura/house-kit": "github:adesulco/kultura-house-kit#v0.1.1"
+"@kultura/house-kit": "github:adesulco/kultura-house-kit#v0.1.2"
 ```
 
 `dist/` is committed, so installing from the tag needs no build step. The repository is public (decided 31 Oct 2026), so CI and Vercel install it with no token.
@@ -152,15 +152,18 @@ Product repos call the reusable workflow from their fast tier on PRs that touch 
     needs: changes
     if: needs.changes.outputs.public == 'true' && github.event_name == 'pull_request'
     permissions: { contents: read, deployments: read }
-    uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@v0.1.1
+    uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@<v0.1.2 commit SHA> # v0.1.2
     with:
       paths: |
-        /
         /en
-    secrets: inherit
+        /id
+    secrets:
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
 ```
 
-It waits for the PR's preview deployment, runs Lighthouse (mobile preset, simulated 4G, median of three), fails under the budget and writes a table to the job summary. TBT stands in for INP in a lab run. Optional secret: `VERCEL_AUTOMATION_BYPASS_SECRET`, for protected previews. Locally:
+Pin the commit rather than the tag, and pass only the one secret, not `secrets: inherit`. Measure the language pages, not a bare `/` that only redirects.
+
+It waits for the PR's preview deployment, runs Lighthouse (mobile preset, simulated 4G, median of three), fails under the budget and writes a table to the job summary. TBT stands in for INP in a lab run. Optional secret: `VERCEL_AUTOMATION_BYPASS_SECRET`, for protected previews. The script never sends it as a header (Lighthouse would add it to every request, third-party hosts included) and never puts it in the measured URL: before each run it opens Vercel's bypass link on the preview host in a throwaway tab, which sets a cookie for that host only, then measures the clean URL. Locally:
 
 ```bash
 node scripts/lighthouse-mobile.mjs https://kultura.co.id/ https://kultura.co.id/en

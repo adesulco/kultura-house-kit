@@ -481,7 +481,7 @@ function defineCardViewer(registry = globalThis.customElements) {
 // src/ecosystem.json
 var ecosystem_default = [
   { key: "kult", label: "KULT", href: "https://kult.co.id" },
-  { key: "kios", label: "kioskultura.com", href: "https://kioskultura.com" },
+  { key: "kios", label: "Kultura Store", href: "https://kioskultura.com" },
   { key: "fangir", label: "FanGir", href: "https://fangir.com" },
   { key: "fancon", label: "FanCon", href: "https://fancon.co.id" },
   { key: "floorpass", label: "FloorPass", href: "https://floorpass.co" },
