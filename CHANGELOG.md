@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Lighthouse check: the Vercel bypass secret is no longer sent as a header. Lighthouse added that header to every request, so the secret reached third-party hosts such as image CDNs. Before each run the script now opens Vercel's bypass link on the preview host in a throwaway tab, which sets a cookie for that host only, then measures the clean URL. Error text has the secret redacted. The workflow passes it as `LH_VERCEL_BYPASS`.
+- Footer strip: the store link reads "Kultura Store", the current name ("Kios Kultura" is retired). The link is unchanged.
+- README and workflow header: callers pin the kit workflow to a commit, pass only the bypass secret, and measure `/en` and `/id`.
+
 ## 0.1.1
 
 - Red buttons fill with red-700 at every size; red-500 with white text was 4.1:1. The accent variant takes each preset's text-safe pair at every size.

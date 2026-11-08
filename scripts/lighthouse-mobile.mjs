@@ -7,7 +7,14 @@
 //   node scripts/lighthouse-mobile.mjs --base https://preview.example.vercel.app --paths "/,/en"
 //   node scripts/lighthouse-mobile.mjs https://kultura.co.id/ https://kultura.co.id/en
 // Env: LH_BASE_URL, LH_PATHS (comma or newline separated), LH_EXTRA_HEADERS (JSON), CHROME_PATH,
-//      LH_MIN_PERFORMANCE, LH_MAX_LCP_MS, LH_MAX_TBT_MS, LH_RUNS (median of n runs, default 1).
+//      LH_MIN_PERFORMANCE, LH_MAX_LCP_MS, LH_MAX_TBT_MS, LH_RUNS (median of n runs, default 1),
+//      LH_VERCEL_BYPASS (Vercel Protection Bypass for Automation secret, for protected previews).
+//
+// Protected previews: the bypass secret is never sent as a header (Lighthouse would add it to every
+// request, third-party hosts included) and never put in the measured URL. Before each run the script
+// opens Vercel's bypass link on the preview host in a throwaway tab, which sets a cookie scoped to that
+// host, then measures the clean URL. Lighthouse keeps cookies when it resets storage and clears the
+// HTTP cache, so the priming request does not warm the measured page.
 import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
@@ -23,7 +30,84 @@ export function parseArgs(argv, env = process.env) {
     else if (a && !a.startsWith("--")) out.urls.push(a);
   }
   if (env.LH_EXTRA_HEADERS) out.headers = JSON.parse(env.LH_EXTRA_HEADERS);
+  out.bypass = env.LH_VERCEL_BYPASS || undefined;
   return out;
+}
+
+/** Vercel's bypass link for the URL's host: a small path, the secret, and "set a cookie". */
+export function bypassUrl(url, secret) {
+  const u = new URL("/robots.txt", url);
+  u.searchParams.set("x-vercel-protection-bypass", secret);
+  u.searchParams.set("x-vercel-set-bypass-cookie", "true");
+  return u.toString();
+}
+
+/** Replaces every occurrence of the secret, so no error text or report can carry it. */
+export function redact(text, secret) {
+  return secret ? String(text).split(secret).join("[redacted]") : String(text);
+}
+
+/** Talks to one Chrome tab over the DevTools protocol (Node 22 has WebSocket built in). */
+async function cdpSession(wsUrl) {
+  const ws = new WebSocket(wsUrl);
+  await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = () => reject(new Error("DevTools connection failed")); });
+  let id = 0;
+  const pending = new Map();
+  const listeners = new Set();
+  ws.onmessage = (ev) => {
+    const msg = JSON.parse(String(ev.data));
+    if (msg.id && pending.has(msg.id)) {
+      const { resolve, reject } = pending.get(msg.id);
+      pending.delete(msg.id);
+      if (msg.error) reject(new Error(msg.error.message));
+      else resolve(msg.result);
+    } else if (msg.method) {
+      for (const l of listeners) l(msg);
+    }
+  };
+  return {
+    send: (method, params = {}) => new Promise((resolve, reject) => {
+      const n = ++id;
+      pending.set(n, { resolve, reject });
+      ws.send(JSON.stringify({ id: n, method, params }));
+    }),
+    once: (method, timeoutMs) => new Promise((resolve, reject) => {
+      const t = setTimeout(() => { listeners.delete(l); reject(new Error(`Timed out waiting for ${method}`)); }, timeoutMs);
+      const l = (msg) => { if (msg.method === method) { clearTimeout(t); listeners.delete(l); resolve(msg.params); } };
+      listeners.add(l);
+    }),
+    close: () => ws.close(),
+  };
+}
+
+/**
+ * Sets Vercel's bypass cookie for the URL's host in the Chrome on `port`, through a throwaway tab.
+ * Vercel answers the bypass link with a redirect that carries Set-Cookie; its docs do not name the
+ * cookie, so any cookie for the host counts (each run starts from a fresh Chrome profile).
+ * Throws (with the secret redacted) when no cookie comes back.
+ */
+export async function primeBypass(port, url, secret, { timeoutMs = 30000 } = {}) {
+  const origin = `http://127.0.0.1:${port}`;
+  const tab = await (await fetch(`${origin}/json/new?about:blank`, { method: "PUT" })).json();
+  const cdp = await cdpSession(tab.webSocketDebuggerUrl);
+  try {
+    await cdp.send("Page.enable");
+    await cdp.send("Network.enable");
+    const loaded = cdp.once("Page.loadEventFired", timeoutMs);
+    await cdp.send("Page.navigate", { url: bypassUrl(url, secret) });
+    await loaded;
+    const { cookies } = await cdp.send("Network.getCookies", { urls: [new URL(url).origin + "/"] });
+    if (!cookies.length) {
+      throw new Error(`The bypass link set no cookie for ${new URL(url).host}: check VERCEL_AUTOMATION_BYPASS_SECRET.`);
+    }
+  } catch (err) {
+    // No `cause`: the original error can carry the bypass URL, and with it the secret.
+    // eslint-disable-next-line preserve-caught-error
+    throw new Error(redact(err instanceof Error ? err.message : err, secret));
+  } finally {
+    cdp.close();
+    await fetch(`${origin}/json/close/${tab.id}`, { method: "PUT" }).catch(() => {});
+  }
 }
 
 export function splitList(s) {
@@ -108,13 +192,14 @@ export function summaryMarkdown(rows, budget = BUDGET) {
   return lines.join("\n") + "\n";
 }
 
-async function runOne(url, { headers, chromePath }) {
+async function runOne(url, { headers, chromePath, bypass }) {
   const [{ default: lighthouse }, chromeLauncher] = await Promise.all([import("lighthouse"), import("chrome-launcher")]);
   const chrome = await chromeLauncher.launch({
     chromePath: chromePath || undefined,
     chromeFlags: ["--headless=new", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"],
   });
   try {
+    if (bypass) await primeBypass(chrome.port, url, bypass);
     const runner = await lighthouse(url, {
       port: chrome.port,
       output: "json",
@@ -139,7 +224,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
   for (const url of urls) {
     const runs = [];
     for (let i = 0; i < args.runs; i++) {
-      const lhr = await runOne(url, { headers: args.headers, chromePath: env.CHROME_PATH });
+      const lhr = await runOne(url, { headers: args.headers, chromePath: env.CHROME_PATH, bypass: args.bypass });
       runs.push(metricsFromLhr(lhr));
       writeFileSync(`.lighthouse/${encodeURIComponent(url)}-${i + 1}.json`, JSON.stringify(lhr));
     }
@@ -161,7 +246,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().then((code) => process.exit(code), (err) => {
-    console.error(err instanceof Error ? err.message : err);
+    console.error(redact(err instanceof Error ? err.message : err, process.env.LH_VERCEL_BYPASS));
     process.exit(2);
   });
 }

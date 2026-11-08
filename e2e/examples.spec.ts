@@ -35,7 +35,7 @@ test("footer strip renders in Bahasa and English", async ({ page }) => {
   await expect(page.locator("#strip-en .k-footer-strip__line")).toHaveText("Part of the Kultura ecosystem");
   await expect(page.locator("#strip-id a")).toHaveCount(7);
   await expect(page.locator("#strip-id").getByRole("link", { name: "Kultura", exact: true })).toHaveCount(0);
-  await expect(page.locator("#strip-id").getByRole("link", { name: "kioskultura.com", exact: true })).toHaveCount(1);
+  await expect(page.locator("#strip-id").getByRole("link", { name: "Kultura Store", exact: true })).toHaveCount(1);
   await expect(page.locator("#strip-id .k-footer-strip__entity")).toHaveText("PT Kios Gemar Kreasi");
   const bg = await page.locator("#strip-id").evaluate((el) => getComputedStyle(el).backgroundColor);
   expect(bg).toBe("rgb(238, 47, 66)");

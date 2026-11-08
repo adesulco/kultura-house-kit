@@ -1,0 +1,52 @@
+// The bypass priming against a stand-in for a protected Vercel preview: the secret sets a
+// host cookie through Vercel's bypass link, and is never sent as a request header.
+import { chromium, expect, test } from "@playwright/test";
+import * as chromeLauncher from "chrome-launcher";
+import { createServer, type IncomingMessage } from "node:http";
+import type { AddressInfo } from "node:net";
+// @ts-expect-error plain ESM script without types
+import { primeBypass } from "../scripts/lighthouse-mobile.mjs";
+
+test.describe.configure({ mode: "serial" });
+
+// Playwright needs the fixtures argument even when no fixture is used.
+// eslint-disable-next-line no-empty-pattern
+test("bypass sets a host cookie, never a header, and redacts the secret on failure", async ({}, testInfo) => {
+  test.skip(testInfo.project.name !== "1280", "browser-independent; runs once");
+  const secret = "s3cret-value";
+  const seen: IncomingMessage[] = [];
+  const server = createServer((req, res) => {
+    seen.push(req);
+    const u = new URL(req.url ?? "/", "http://stand-in");
+    // Like Vercel: the bypass link answers with a redirect that sets the cookie.
+    if (u.searchParams.get("x-vercel-protection-bypass") === secret && u.searchParams.get("x-vercel-set-bypass-cookie") === "true") {
+      res.writeHead(307, { "set-cookie": "bypass=ok; Path=/; HttpOnly; SameSite=Lax", location: u.pathname });
+      res.end();
+      return;
+    }
+    if ((req.headers.cookie ?? "").includes("bypass=ok")) {
+      res.writeHead(200, { "content-type": "text/html" });
+      res.end("<!doctype html><title>page</title><h1>page</h1>");
+      return;
+    }
+    // Stands in for the sign-in redirect, kept local so the test needs no network.
+    res.writeHead(401, { "content-type": "text/plain" });
+    res.end("sign in");
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  const page = `http://127.0.0.1:${(server.address() as AddressInfo).port}/en`;
+  const chrome = await chromeLauncher.launch({ chromePath: chromium.executablePath(), chromeFlags: ["--headless=new", "--no-sandbox"] });
+  try {
+    // A wrong secret fails clearly, and the message does not carry it.
+    const err = await primeBypass(chrome.port, page, "wrong-secret", { timeoutMs: 10000 }).then(() => null, (e: Error) => e);
+    expect(err?.message).toMatch(/set no cookie for 127\.0\.0\.1/);
+    expect(err?.message).not.toContain("wrong-secret");
+
+    await primeBypass(chrome.port, page, secret, { timeoutMs: 10000 });
+    expect(seen.some((r) => r.headers["x-vercel-protection-bypass"])).toBe(false);
+    expect(seen.some((r) => (r.url ?? "").startsWith("/robots.txt?"))).toBe(true);
+  } finally {
+    await chrome.kill();
+    server.close();
+  }
+});

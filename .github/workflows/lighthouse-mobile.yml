@@ -4,12 +4,13 @@
 #   lighthouse:
 #     needs: changes
 #     if: needs.changes.outputs.public == 'true' && github.event_name == 'pull_request'
-#     uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@v0.1.1
+#     uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@<v0.1.2 commit SHA> # v0.1.2
 #     with:
 #       paths: |
-#         /
 #         /en
-#     secrets: inherit
+#         /id
+#     secrets:
+#       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
 #   The calling job needs: permissions: { contents: read, deployments: read }
 name: Lighthouse mobile
 on:
@@ -37,7 +38,7 @@ on:
       kit-ref:
         description: Kit tag that supplies the check script.
         type: string
-        default: v0.1.1
+        default: v0.1.2
     secrets:
       HOUSE_KIT_READ_TOKEN:
         description: Only needed if the kit repo is ever made private again.
@@ -107,8 +108,8 @@ jobs:
           LH_BASE_URL: ${{ steps.url.outputs.base }}
           LH_PATHS: ${{ inputs.paths }}
           LH_RUNS: ${{ inputs.runs }}
-          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          # Used only to set a bypass cookie on the preview host; never sent as a header.
+          LH_VERCEL_BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
           export CHROME_PATH="$(command -v google-chrome || command -v chromium)"
-          if [ -n "$BYPASS" ]; then export LH_EXTRA_HEADERS="{\"x-vercel-protection-bypass\":\"$BYPASS\"}"; fi
           node .lh-tools/lighthouse-mobile.mjs
