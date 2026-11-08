@@ -1,6 +1,6 @@
 # STATUS: kultura-house-kit
 
-Updated 1 Nov 2026 by Build. Clean stop: nothing uncommitted, no kit PR open. Plan of record: Benchmark v2, decisions DS-1 to DS-6.
+Updated 8 Nov 2026 by Build. Plan of record: Benchmark v2, decisions DS-1 to DS-6.
 
 ## Where it stands
 
@@ -11,9 +11,10 @@ Updated 1 Nov 2026 by Build. Clean stop: nothing uncommitted, no kit PR open. Pl
 | [#2 House kit v0.1](https://github.com/adesulco/kultura-house-kit/pull/2) | Merged 31 Oct, after a review pass (fixes below) |
 | Tag [`v0.1.0`](https://github.com/adesulco/kultura-house-kit/releases/tag/v0.1.0) | Tagged 31 Oct on `9adda49`. Release carries `kultura-house-kit.css`, `kultura-house-kit.js`, `tokens.css`, `ecosystem.json` |
 | Tag [`v0.1.1`](https://github.com/adesulco/kultura-house-kit/releases/tag/v0.1.1) | Tagged 1 Nov ([#14](https://github.com/adesulco/kultura-house-kit/pull/14)). Ade's 1 Nov decisions: red buttons fill with red-700 at every size; the strip keeps red-500 with all text 19 px bold (AA as large text); `--k-strip-max` and `--k-strip-pad` container hooks |
+| Tag [`v0.1.2`](https://github.com/adesulco/kultura-house-kit/releases/tag/v0.1.2) | Tagged 8 Nov ([#18](https://github.com/adesulco/kultura-house-kit/pull/18), merged by Ade). The Lighthouse bypass secret is set as a cookie on the preview host only, never sent as a header (it reached third-party hosts before); the reusable workflow fetches its script from its own commit; the strip's store link reads "Kultura Store" |
 | Dependencies | 1 Nov: actions group, jsdom 30, TypeScript 6, ESLint 10 merged ([#12](https://github.com/adesulco/kultura-house-kit/pull/12)); major @types/node and React updates ignored on purpose (Node 22, React 18 floor) |
 | Branch protection | 1 Nov: `quick` and `full` required on `main` |
-| [kultura-co-id #192](https://github.com/adesulco/kultura-co-id/pull/192) | Draft, on v0.1.1. Tokens, `kultura` preset, `--accent` on red-700, footer strip in place of the bottom rule, lined up with the footer columns (28 px at 390, 72 px at 1280), Lighthouse job. Site CI and the Vercel preview are green. The `lighthouse` check fails because the preview redirects to the Vercel sign-in page, so nothing is measured: not a threshold miss, not a regression. It needs the repository secret `VERCEL_AUTOMATION_BYPASS_SECRET` (not present at 1 Nov 05:00 WIB) |
+| [kultura-co-id #192](https://github.com/adesulco/kultura-co-id/pull/192) | Draft, on v0.1.2, reviewed 7 and 8 Nov: server-rendered strip with no entity line (the footer copyright already names the company), Lighthouse on `/en` and `/id` pinned to the v0.1.2 commit, only the bypass secret passed. Site CI and preview green. `lighthouse` measures nothing until the repository secret `VERCEL_AUTOMATION_BYPASS_SECRET` exists (still absent 8 Nov) |
 | [fancon-id #26](https://github.com/adesulco/fancon-id/pull/26) | Merged 1 Nov on v0.1.0. Install and `fancon` preset only; no visual change. The FanCon pilot moves it to v0.1.1 when it imports the kit CSS |
 | Gelar | Waits for PR-D2 (planned 13 Nov) |
 | `adesulco/kultura-house-kit-old` | The first private copy, renamed and kept private. Its old commits carry a personal email, which is why the public repo was created fresh. Safe to delete |
@@ -39,17 +40,17 @@ Review fixes before the tag (31 Oct):
 
 ## Waiting on Ade
 
-1. **Vercel bypass secret for kultura-co-id.** Create it in Vercel (kultura-co-id, Settings, Deployment Protection, Protection Bypass for Automation) and save it in GitHub as the repository secret `VERCEL_AUTOMATION_BYPASS_SECRET` (Settings, Secrets and variables, Actions). Then rerun the `lighthouse` check on #192.
+1. **Vercel bypass secret for kultura-co-id.** Create it in Vercel (kultura-co-id, Settings, Deployment Protection, Protection Bypass for Automation) and save it in GitHub as the repository secret `VERCEL_AUTOMATION_BYPASS_SECRET` (Settings, Secrets and variables, Actions). Then rerun the `lighthouse` check on #192. The first run is also the first real test of the v0.1.2 cookie bypass: Vercel's docs do not name the cookie or say which paths take the bypass link.
 2. **Merge kultura-co-id #192** once Lighthouse passes. Watch LCP: one manual run on the live home page measured 2.51 s against the 2.5 s limit.
 3. **Delete `kultura-house-kit-old`** (Settings, Danger zone). The build login has no delete permission.
 
 Resolved 31 Oct: install access (repo made public, so no tokens and no Actions access setting are needed).
-Resolved 1 Nov (Ade): red contrast (red-700 buttons, large bold strip text), strip alignment (container hooks), branch protection, dependency updates. One commit on `main` (0ea38aa, a GitHub-side merge) shows ade@kultura.co.id as committer; Ade chose to leave it. Kit merges are done locally from now on so commits keep the no-reply address.
+Resolved 1 Nov (Ade): red contrast (red-700 buttons, large bold strip text), strip alignment (container hooks), branch protection, dependency updates. One commit on `main` (0ea38aa, a GitHub-side merge) shows ade@kultura.co.id as committer; Ade chose to leave it. From 7 Nov the standing rules say never push to main: kit changes go through a PR that Ade merges (or asks Build to merge). A GitHub-side merge records ade@kultura.co.id as committer; the authors keep the no-reply address.
 
 ## Next
 
-1. Gelar: after PR-D2 merges (planned 13 Nov). Install v0.1.1, `data-k-product="gelar"`, Outfit and JetBrains Mono only, footer strip with `entity="PT Kultura Digital Kreasi, Jakarta"`, strip hooks set to Gelar's container, Lighthouse on `/` and `/e/fancon-26`.
-2. FanCon pilot (`BUILD_PROMPT_FanCon_Web_Poster_Arsip_2026-11-03.md`): bump fancon-id to v0.1.1 and import the kit CSS there.
+1. Gelar: after PR-D2 merges (planned 13 Nov). Install v0.1.2, `data-k-product="gelar"`, Outfit and JetBrains Mono only, footer strip with `entity="PT Kultura Digital Kreasi, Jakarta"`, strip hooks set to Gelar's container, Lighthouse on `/` and `/e/fancon-26`.
+2. FanCon pilot (`BUILD_PROMPT_FanCon_Web_Poster_Arsip_2026-11-03.md`): bump fancon-id to v0.1.2 and import the kit CSS there.
 3. KULT, FanHub (footer only), Counter and the small repos: next window.
 4. FloorPass (DS-5): the `floorpass` preset ships in the kit; app adoption is the FloorPass session's call.
 5. grade.kioskultura.com and the kios storefront: no PR; `docs/adoption-kioskultura.md` (now on v0.1.1) is ready for the grading session.
