@@ -7,7 +7,7 @@ Plan of record: `04_Digital/00_Strategy/Kultura_Digital_Web_Design_Benchmark_v2_
 ## Install
 
 ```json
-"@kultura/house-kit": "github:adesulco/kultura-house-kit#v0.1.2"
+"@kultura/house-kit": "github:adesulco/kultura-house-kit#v0.1.3"
 ```
 
 `dist/` is committed, so installing from the tag needs no build step. The repository is public (decided 31 Oct 2026), so CI and Vercel install it with no token.
@@ -152,7 +152,7 @@ Product repos call the reusable workflow from their fast tier on PRs that touch 
     needs: changes
     if: needs.changes.outputs.public == 'true' && github.event_name == 'pull_request'
     permissions: { contents: read, deployments: read }
-    uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@<v0.1.2 commit SHA> # v0.1.2
+    uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@<v0.1.3 commit SHA> # v0.1.3
     with:
       paths: |
         /en

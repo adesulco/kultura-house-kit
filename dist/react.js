@@ -20,7 +20,7 @@ var ecosystem_default = [
   { key: "kult", label: "KULT", href: "https://kult.co.id" },
   { key: "kios", label: "Kultura Store", href: "https://kioskultura.com" },
   { key: "fangir", label: "FanGir", href: "https://fangir.com" },
-  { key: "fancon", label: "FanCon", href: "https://fancon.co.id" },
+  { key: "fancon", label: "FanCon", href: "https://fancon.id" },
   { key: "floorpass", label: "FloorPass", href: "https://floorpass.co" },
   { key: "gelar", label: "Gelar", href: "https://gelar.co" },
   { key: "fanhub", label: "fanhub.", href: "https://fanhub.id" },

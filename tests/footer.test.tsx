@@ -12,6 +12,8 @@ describe("ecosystem.json", () => {
   it("is the v0.1 list in order", () => {
     expect(ecosystem.map((l) => l.key)).toEqual(["kult", "kios", "fangir", "fancon", "floorpass", "gelar", "fanhub", "kultura"]);
     for (const l of ecosystem) expect(l.href).toMatch(/^https:\/\//);
+    // FanCon's domain since 9 November 2026; fancon.co.id only redirects there.
+    expect(ecosystem.find((l) => l.key === "fancon")?.href).toBe("https://fancon.id");
   });
 });
 
