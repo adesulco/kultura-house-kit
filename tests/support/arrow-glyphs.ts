@@ -2,6 +2,8 @@
 // Covers the characters themselves, HTML entities, percent-encoding, and CSS, JS and HTML
 // numeric escapes, plus classes, ids and icon components named after an arrow.
 // Code points are written as numbers so this file passes its own sweep.
+// Chevrons used as arrows count (Ade, 19 November 2026). Small triangles (U+25B6 and its
+// family) do not: they mark controls that open or sort.
 // Not detected: an arrow drawn as an unnamed SVG path or inside an image, and ASCII
 // stand-ins such as a hyphen followed by a greater-than sign. Review covers those.
 

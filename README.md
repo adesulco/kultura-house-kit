@@ -47,7 +47,7 @@ Put the product key on `<html>`. It sets `--k-accent` and `--k-on-accent`.
 
 A unit test computes WCAG contrast for every preset and fails under 4.5:1.
 
-**FanCon.** By Ade's decision of 19 November 2026, FanCon is off the kit's type and buttons: fancon.id has its own type and buttons. From the kit FanCon uses only the footer strip and the motion and performance rules, as FanHub does. It imports `footer.css` (and `motion.css` if it wants `.k-reveal` and `.k-lift`) and runs the Lighthouse check below. The "Do not" list applies to every Kultura site, FanCon and FanHub included. The `fancon` preset stays in the kit.
+**FanCon.** By Ade's decision of 19 November 2026, FanCon is off the kit's type and buttons: fancon.id has its own type and buttons. From the kit FanCon uses only the footer strip and the motion and performance rules, as FanHub does. It imports `footer.css` (and `motion.css` if it wants `.k-reveal` and `.k-lift`) and runs the Lighthouse check below. The "Do not" list applies to every Kultura site, FanCon and FanHub included. The `fancon` preset stays for now: fancon.id uses the kit's type and buttons until step 2 of its redesign is live, planned for Friday 11 December 2026. Removing the preset is planned for a January 2027 release.
 
 ## Tokens
 
@@ -142,7 +142,7 @@ Only `transform` and `opacity` animate. `.k-reveal` (12 px rise and fade, once) 
 - No uppercase button text except compact mono.
 - No body text under 14 px.
 - No third-party script before interaction, except analytics.
-- No arrow glyphs: not as a character, an entity, a CSS escape or an icon, on links, buttons or anywhere else. A link that leaves a site says where it goes in words, for example "Daftar di gelar.co" (Ade, D10, 19 November 2026).
+- No arrow glyphs: not as a character, an entity, a CSS escape or an icon, on links, buttons or anywhere else. A link that leaves a site says where it goes in words, for example "Daftar di gelar.co" (Ade, D10, 19 November 2026). A chevron used as an arrow (an angle quote or angle bracket after a link) counts as an arrow. A small triangle does not: it marks a control that opens or sorts.
 
 `tests/no-arrows.test.ts` sweeps every tracked text file of the kit, `dist/` included, and fails when an arrow comes back as a character, an entity, an escape, or a class, id or icon component named after an arrow. It cannot see an arrow drawn as an unnamed SVG path or inside an image, so review still checks icons. Product repos run their own sweep.
 
