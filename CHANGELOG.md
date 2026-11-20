@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Footer strip: the FanCon link goes to `https://fancon.id`, FanCon's domain from 9 November 2026 (FanCon web decisions 9 Nov 2026, #2). `fancon.co.id` keeps a permanent redirect to it. Merge only once `fancon.id` answers.
+
 ## 0.1.2
 
 - Lighthouse check: the Vercel bypass secret is no longer sent as a header. Lighthouse added that header to every request, so the secret reached third-party hosts such as image CDNs. Before each run the script now opens Vercel's bypass link on the preview host in a throwaway tab, which sets a cookie for that host only, then measures the clean URL. Error text has the secret redacted. The workflow passes it as `LH_VERCEL_BYPASS`.

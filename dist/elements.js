@@ -12,7 +12,7 @@ import {
   sheenFromTilt,
   tiltFromOrientation,
   tiltFromPointer
-} from "./chunk-EHOIJ2RQ.js";
+} from "./chunk-SE6RRDOW.js";
 
 // src/elements/card-viewer.ts
 var HTMLElementBase = typeof HTMLElement === "undefined" ? class {
