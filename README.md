@@ -7,7 +7,7 @@ Plan of record: `04_Digital/00_Strategy/Kultura_Digital_Web_Design_Benchmark_v2_
 ## Install
 
 ```json
-"@kultura/house-kit": "github:adesulco/kultura-house-kit#v0.1.3"
+"@kultura/house-kit": "github:adesulco/kultura-house-kit#v0.1.4"
 ```
 
 `dist/` is committed, so installing from the tag needs no build step. The repository is public (decided 31 Oct 2026), so CI and Vercel install it with no token.
@@ -20,7 +20,7 @@ Repos that cannot install from GitHub (the grade.kioskultura.com family on GitLa
 |---|---|
 | `@kultura/house-kit/tokens.css` | CSS custom properties only, plus the product presets |
 | `@kultura/house-kit/base.css` | tokens + type scale + buttons + focus + motion + footer strip + card viewer |
-| `@kultura/house-kit/footer.css` | footer strip and motion rules only, self-scoped, no global tokens (FanHub, DS-2) |
+| `@kultura/house-kit/footer.css` | footer strip and motion rules only, self-scoped, no global tokens (FanHub, DS-2; FanCon from 19 November 2026) |
 | `@kultura/house-kit/motion.css` | `.k-reveal` and `.k-lift` only |
 | `@kultura/house-kit/tailwind` | Tailwind preset mapping the same tokens (`theme.extend`); `presets: [require("@kultura/house-kit/tailwind")]` or the default import |
 | `@kultura/house-kit/elements` | registers `<k-card-viewer>` and `<k-footer-strip>`, starts `.k-reveal` on import (plain HTML). React apps: `CardViewer` registers after hydration; for `.k-reveal` without it, call `defineElements()` from `/react` in a client effect |
@@ -46,6 +46,8 @@ Put the product key on `<html>`. It sets `--k-accent` and `--k-on-accent`.
 | `fanhub` | not set | | FanHub keeps its own tokens (DS-2) |
 
 A unit test computes WCAG contrast for every preset and fails under 4.5:1.
+
+**FanCon.** By Ade's decision of 19 November 2026, FanCon is off the kit's type and buttons: fancon.id has its own type and buttons. From the kit FanCon uses only the footer strip and the motion and performance rules, as FanHub does. It imports `footer.css` (and `motion.css` if it wants `.k-reveal` and `.k-lift`) and runs the Lighthouse check below. The "Do not" list applies to every Kultura site, FanCon and FanHub included. The `fancon` preset stays for now: fancon.id uses the kit's type and buttons until step 2 of its redesign is live, planned for Friday 11 December 2026. Removing the preset is planned for a January 2027 release.
 
 ## Tokens
 
@@ -89,7 +91,7 @@ const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500"], display: "swa
 
 ## Buttons
 
-`.k-btn` + size (`--hero` 52/18, default 44/16, `--compact` 36/14) + variant (`--primary`, `--secondary`, `--ghost`, `--accent`, `--danger`) + shape (`--pill` default, `--console` 8 px). `--mono` gives mono caps and only works with `--compact`. Icon goes in `<span class="k-btn__icon">` after the label.
+`.k-btn` + size (`--hero` 52/18, default 44/16, `--compact` 36/14) + variant (`--primary`, `--secondary`, `--ghost`, `--accent`, `--danger`) + shape (`--pill` default, `--console` 8 px). `--mono` gives mono caps and only works with `--compact`. Icon goes in `<span class="k-btn__icon">` after the label, and is never an arrow (see "Do not").
 
 Red fills are red-700 at every size: button text is 14 to 18 px, and white on red-500 is only 4.1:1. The accent variant takes each product's text-safe pair, so red presets fill with red-700 and the other presets with their own accent.
 
@@ -140,6 +142,9 @@ Only `transform` and `opacity` animate. `.k-reveal` (12 px rise and fade, once) 
 - No uppercase button text except compact mono.
 - No body text under 14 px.
 - No third-party script before interaction, except analytics.
+- No arrow glyphs: not as a character, an entity, a CSS escape or an icon, on links, buttons or anywhere else. A link that leaves a site says where it goes in words, for example "Daftar di gelar.co" (Ade, D10, 19 November 2026). A chevron used as an arrow (an angle quote or angle bracket after a link) counts as an arrow. A small triangle does not: it marks a control that opens or sorts.
+
+`tests/no-arrows.test.ts` sweeps every tracked text file of the kit, `dist/` included, and fails when an arrow comes back as a character, an entity, an escape, or a class, id or icon component named after an arrow. It cannot see an arrow drawn as an unnamed SVG path or inside an image, so review still checks icons. Product repos run their own sweep.
 
 ## Performance budget and check
 
@@ -152,7 +157,7 @@ Product repos call the reusable workflow from their fast tier on PRs that touch 
     needs: changes
     if: needs.changes.outputs.public == 'true' && github.event_name == 'pull_request'
     permissions: { contents: read, deployments: read }
-    uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@<v0.1.3 commit SHA> # v0.1.3
+    uses: adesulco/kultura-house-kit/.github/workflows/lighthouse-mobile.yml@<v0.1.4 commit SHA> # v0.1.4
     with:
       paths: |
         /en

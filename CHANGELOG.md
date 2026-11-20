@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4
+
+- House rule, in the README "Do not" list: no arrow glyphs on any Kultura site; a link that leaves a site says where it goes in words (Ade, D10, 19 November 2026, FanCon web decisions of that date). A chevron used as an arrow counts; a small triangle, which marks a control that opens or sorts, does not.
+- No file in the kit carried an arrow glyph, so the footer strip, the examples and `dist/` are unchanged from 0.1.3. `tests/no-arrows.test.ts` now sweeps every tracked text file, `dist/` included, and fails if one comes back as a character, an entity, an escape, or a class, id or icon component named after an arrow. It cannot see an arrow drawn as an unnamed SVG path or inside an image.
+- README: FanCon is off the kit's type and buttons (Ade, 19 November 2026). It uses only the footer strip and the motion and performance rules, as FanHub does. The `fancon` preset stays for now; its removal is planned for a January 2027 release, after fancon.id's redesign is live.
+- Products pick the rule up at their next kit update. kultura.co.id removes the arrow from the FanCon 26 link in its top bar with its release of Tuesday 5 January 2027.
+
 ## 0.1.3
 
 - Footer strip: the FanCon link goes to `https://fancon.id`, FanCon's domain from 9 November 2026 (FanCon web decisions 9 Nov 2026, #2). `fancon.co.id` keeps a permanent redirect to it. Merge only once `fancon.id` answers.
