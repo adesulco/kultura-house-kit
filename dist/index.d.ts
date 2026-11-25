@@ -9,7 +9,7 @@ declare const tokens: {
     readonly surface: "#F4F4F4";
     readonly line: "#E6E6E6";
     readonly muted: "#6E6E76";
-    readonly "amber-text": "#8A5A00";
+    readonly "amber-text": "#6B4500";
     readonly "amber-tint": "#FFF4DE";
     readonly "amber-line": "#F2DCA8";
     readonly green: "#0F7A3D";
@@ -49,8 +49,9 @@ declare const legacyColourMap: Record<string, TokenName>;
 declare function hexToRgb(hex: string): [number, number, number];
 declare function relativeLuminance(hex: string): number;
 declare function contrastRatio(a: string, b: string): number;
-/** AA thresholds: 4.5 for body text, 3 for large text (24 px, or 18.66 px bold) and UI fills. */
+/** AA and AAA thresholds: 4.5 for AA body text, 7 for AAA body text, 3 for large text (24 px, or 18.66 px bold) and UI fills. */
 declare const AA_TEXT = 4.5;
+declare const AAA_TEXT = 7;
 declare const AA_LARGE = 3;
 
 type ButtonSize = "hero" | "default" | "compact";
@@ -161,5 +162,5 @@ declare function cardViewerHostAttributes(o: CardViewerMarkupOptions): Record<st
 /** The whole element as an HTML string, for templates that cannot run React. */
 declare function renderCardViewerHTML(o: CardViewerMarkupOptions): string;
 
-export { AA_LARGE, AA_TEXT, BUTTON_SHAPES, BUTTON_SIZES, BUTTON_VARIANTS, buttonClass, cardViewerHostAttributes, contrastRatio, ecosystemLinks, footerStripModel, hexToRgb, houseKitPreset, legacyColourMap, normaliseLang, productPresets, relativeLuminance, renderCardViewerHTML, renderCardViewerInner, renderFooterStripHTML, renderFooterStripInner, tokens };
+export { AAA_TEXT, AA_LARGE, AA_TEXT, BUTTON_SHAPES, BUTTON_SIZES, BUTTON_VARIANTS, buttonClass, cardViewerHostAttributes, contrastRatio, ecosystemLinks, footerStripModel, hexToRgb, houseKitPreset, legacyColourMap, normaliseLang, productPresets, relativeLuminance, renderCardViewerHTML, renderCardViewerInner, renderFooterStripHTML, renderFooterStripInner, tokens };
 export type { AccentPreset, ButtonClassOptions, ButtonShape, ButtonSize, ButtonVariant, CardViewerMarkupOptions, EcosystemLink, FooterStripModel, FooterStripOptions, ProductKey, TokenName };

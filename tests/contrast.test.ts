@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AA_LARGE, AA_TEXT, contrastRatio } from "../src/contrast";
+import { AA_LARGE, AA_TEXT, AAA_TEXT, contrastRatio } from "../src/contrast";
 import { legacyColourMap, productPresets, tokens } from "../src/tokens";
 
 describe("contrast maths", () => {
@@ -40,9 +40,9 @@ describe("product accent presets (fails under 4.5:1)", () => {
 });
 
 describe("status colours", () => {
-  it("amber text and green pass on paper and on their tints", () => {
-    expect(contrastRatio(tokens["amber-text"], tokens.paper)).toBeGreaterThanOrEqual(AA_TEXT);
-    expect(contrastRatio(tokens["amber-text"], tokens["amber-tint"])).toBeGreaterThanOrEqual(AA_TEXT);
+  it("amber text meets WCAG AAA (7:1) on paper and amber tint; green passes AA on paper and green tint", () => {
+    expect(contrastRatio(tokens["amber-text"], tokens.paper)).toBeGreaterThanOrEqual(AAA_TEXT);
+    expect(contrastRatio(tokens["amber-text"], tokens["amber-tint"])).toBeGreaterThanOrEqual(AAA_TEXT);
     expect(contrastRatio(tokens.green, tokens.paper)).toBeGreaterThanOrEqual(AA_TEXT);
     expect(contrastRatio(tokens.green, tokens["green-tint"])).toBeGreaterThanOrEqual(AA_TEXT);
   });

@@ -18,7 +18,7 @@ var tokens = {
   surface: "#F4F4F4",
   line: "#E6E6E6",
   muted: "#6E6E76",
-  "amber-text": "#8A5A00",
+  "amber-text": "#6B4500",
   "amber-tint": "#FFF4DE",
   "amber-line": "#F2DCA8",
   green: "#0F7A3D",
@@ -74,6 +74,7 @@ function contrastRatio(a, b) {
   return (hi + 0.05) / (lo + 0.05);
 }
 var AA_TEXT = 4.5;
+var AAA_TEXT = 7;
 var AA_LARGE = 3;
 
 // src/button.ts
@@ -180,6 +181,7 @@ function renderCardViewerHTML(o) {
   return `<k-card-viewer ${attrs}>${renderCardViewerInner(o)}</k-card-viewer>`;
 }
 export {
+  AAA_TEXT,
   AA_LARGE,
   AA_TEXT,
   BUTTON_SHAPES,

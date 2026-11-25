@@ -21,6 +21,7 @@ export function contrastRatio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-/** AA thresholds: 4.5 for body text, 3 for large text (24 px, or 18.66 px bold) and UI fills. */
+/** AA and AAA thresholds: 4.5 for AA body text, 7 for AAA body text, 3 for large text (24 px, or 18.66 px bold) and UI fills. */
 export const AA_TEXT = 4.5;
+export const AAA_TEXT = 7;
 export const AA_LARGE = 3;
