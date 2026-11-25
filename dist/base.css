@@ -8,7 +8,7 @@
   /* neutrals */
   --k-ink:#0A0A0A; --k-paper:#FFFFFF; --k-surface:#F4F4F4; --k-line:#E6E6E6; --k-muted:#6E6E76;
   /* status (never red for form errors) */
-  --k-amber-text:#8A5A00; --k-amber-tint:#FFF4DE; --k-amber-line:#F2DCA8;
+  --k-amber-text:#6B4500; --k-amber-tint:#FFF4DE; --k-amber-line:#F2DCA8;
   --k-green:#0F7A3D; --k-green-tint:#E9F8EF;
   /* product accent slot: each product sets these two, contrast-gated */
   --k-accent:var(--k-red-500); --k-on-accent:#FFFFFF;

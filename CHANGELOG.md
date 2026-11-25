@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Status tokens (GL-FINAL-07, UD-03): darkened `--k-amber-text` (`tokens["amber-text"]`) from `#8A5A00` to `#6B4500` so warning text reaches WCAG AAA contrast (7.35:1 on `#FFF4DE`, 8.26:1 on `#FFFFFF`). Exported `AAA_TEXT = 7` from contrast helpers and upgraded the contrast test suite.
+
 ## 0.1.4
 
 - House rule, in the README "Do not" list: no arrow glyphs on any Kultura site; a link that leaves a site says where it goes in words (Ade, D10, 19 November 2026, FanCon web decisions of that date). A chevron used as an arrow counts; a small triangle, which marks a control that opens or sorts, does not.

@@ -58,7 +58,7 @@ A unit test computes WCAG contrast for every preset and fails under 4.5:1.
 | `--k-red-800` | `#B0182A` | Pressed state, focus ring |
 | `--k-ink` / `--k-paper` | `#0A0A0A` / `#FFFFFF` | |
 | `--k-surface` / `--k-line` / `--k-muted` | `#F4F4F4` / `#E6E6E6` / `#6E6E76` | |
-| `--k-amber-text` / `-tint` / `-line` | `#8A5A00` / `#FFF4DE` / `#F2DCA8` | Warnings. Never red for form errors |
+| `--k-amber-text` / `-tint` / `-line` | `#6B4500` / `#FFF4DE` / `#F2DCA8` | Warnings (7.35:1 WCAG AAA on tint). Never red for form errors |
 | `--k-green` / `--k-green-tint` | `#0F7A3D` / `#E9F8EF` | Success |
 | `--k-font` / `--k-mono` | Outfit / JetBrains Mono | |
 | `--k-radius-pill` / `-console` / `-card` | `9999px` / `8px` / `12px` | Pill for consumer sites, 8 px for consoles |
